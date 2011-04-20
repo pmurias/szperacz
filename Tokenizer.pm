@@ -16,6 +16,7 @@ typedef struct Tokenizer {
   int i;
 } Tokenizer;
 
+/* Creates a tokenizer with space for size tokens */
 Tokenizer* tokenizer_create(int size) {
     Tokenizer* t = malloc(sizeof(Tokenizer));
     t->pos = 0;
@@ -25,6 +26,8 @@ Tokenizer* tokenizer_create(int size) {
     t->i = 0;
     return t;
 }
+
+/* adds a token to the buffer, requires a previous call to set_docID */
 void tokenizer_add(Tokenizer* t,int tokID) {
     if (t->i >= t->size) {
         printf("no space in buffer\n");
@@ -36,9 +39,12 @@ void tokenizer_add(Tokenizer* t,int tokID) {
     t->pos++;
     t->i++;
 }
+/* sets the docID for the subsequent ->add calls */
 void tokenizer_set_docID(Tokenizer* t,int docID) {
     t->docID = docID;
 }
+
+/* debugging method that prints out the buffer */
 void tokenizer_print(Tokenizer* t) {
     int i=0;
     for (i=0;i < t->i;i++) {
@@ -56,9 +62,13 @@ static int pos_cmp(const void* va,const void *vb) {
   if (tmp) return tmp;
   return a->pos - b->pos;
 }
+
+/* sorts the tokens into a correct order */
 void tokenizer_sort(Tokenizer* t) {
   qsort(t->buf,t->i,sizeof(pos),pos_cmp);
 }
+
+/* writes out the tokens to a file */
 #define wrt(X) fwrite(&X,1,sizeof(int),out);
 void tokenizer_write(Tokenizer* t,char *to) {
   FILE* out = fopen(to,"w");
@@ -82,7 +92,6 @@ void tokenizer_write(Tokenizer* t,char *to) {
     }
     i++;
   }
-  printf("terms = %d\n",terms);
   wrt(terms);
   int* offsets = calloc(terms,sizeof(int));
   fwrite(offsets,sizeof(int),terms,out);
