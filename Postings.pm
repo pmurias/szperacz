@@ -19,17 +19,36 @@ typedef struct Result {
 Postings* postings_create(char* filename) {
     Postings* p = malloc(sizeof(Postings));
     p->filename = filename;
+    //printf("opening filename %s\n",filename);
     p->file = fopen(filename,"r");
+    //printf("pos = %d\n",ftell(p->file));
     fread(&p->terms,sizeof(int),1,p->file);
-    p->offsets = malloc(sizeof(int) * p->terms);
-    fread(p->offsets,sizeof(int),p->terms,p->file);
-    printf("reading in %d\n",p->terms);
+    //printf("terms %d\n",p->terms);
+    //printf("pos = %d\n",ftell(p->file));
+    p->offsets = (int) malloc(sizeof(int) * p->terms);
+    fread((void*)p->offsets,sizeof(int),p->terms,p->file);
+    /*
+    int i;
+    for (i=0;i<p->terms;i++) {
+        printf("offset i = %d\n",p->offsets[i]);
+    }
+    */
     return p;
 }
 Result* postings_search(Postings* p,int tokID) {
+    //printf("searching for token: %d\n",tokID);
     int offset = p->offsets[tokID];
+    int size;
+    if (tokID == p->terms-1) {
+      fseek(p->file,0,SEEK_END);   
+      size = (ftell(p->file) - offset) / 4;
+    } else {
+      //printf("next offset %d\n",p->offsets[tokID+1]);
+      size =  (p->offsets[tokID+1] - offset) / 4;
+    }
     fseek(p->file,offset,SEEK_SET);
-    int size =  (p->offsets[tokID+1] - offset) / 4;
+    //printf("offset = %d next_offset = %d\n",p->offsets[tokID],p->offsets[tokID+1]);
+    //printf("reading chunk of data of size: %d\n",size);
     int *buf = malloc(size * sizeof(int)); 
     fread(buf,sizeof(int),size,p->file);
 

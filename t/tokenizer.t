@@ -6,7 +6,7 @@ use Test::File::Contents;
 use File::Temp qw(:POSIX);
 use Tokenizer;
 my $tokenizer = TokenizerPtr::create(20);
-pass "lives after ->create";
+pass "lives after calling create";
 
 $tokenizer->set_docID(13);
 for my $token (100,234,534,12) {

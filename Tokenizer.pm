@@ -88,10 +88,15 @@ void tokenizer_write(Tokenizer* t,char *to) {
   while (i < t->i) {
     if (t->buf[i].tokID != current_tokID) {
       current_tokID = t->buf[i].tokID; 
-      terms++;
+      if (current_tokID >= terms) {
+        terms = current_tokID+1;
+      }
     }
     i++;
   }
+
+  //printf("### writing out %d\n",terms);
+
   wrt(terms);
   int* offsets = calloc(terms,sizeof(int));
   fwrite(offsets,sizeof(int),terms,out);
@@ -120,11 +125,13 @@ void tokenizer_write(Tokenizer* t,char *to) {
     int start = i;
     int current_tokID = t->buf[i].tokID; 
     int current_docID = -1;
+    //printf("offset for %d = %d\n",current_tokID,offset);
     offsets[current_tokID] = offset;
     while (t->buf[i].tokID == current_tokID) {
       int docID = t->buf[i].docID;
       int doc_size = 0;
       offset += sizeof(int);
+      //printf("docID = %d\n",docID);
       wrt(docID);
       int j = i;
       while (t->buf[j].tokID == current_tokID && t->buf[j].docID == docID) {
@@ -132,6 +139,7 @@ void tokenizer_write(Tokenizer* t,char *to) {
         j++;
       }
       offset += sizeof(int);
+      //printf("doc_size = %d\n",doc_size);
       wrt(doc_size);
       while (t->buf[i].tokID == current_tokID && t->buf[i].docID == docID) {
         offset += sizeof(int);
@@ -142,8 +150,21 @@ void tokenizer_write(Tokenizer* t,char *to) {
 
       
   }
+
+  // offsets[token] is 0 for tokens which are not in the buffer, we must fix that
+  {
+    int i;
+    int offset; // the token with the greatest tokID is always in the buffer
+    for (i=terms-1;i>=0;i--) {
+      if (offsets[i] == 0) offsets[i] = offset;
+      else offset = offsets[i]; 
+    }
+  }
+
   fseek(out,sizeof(int),SEEK_SET);
   fwrite(offsets,sizeof(int),terms,out);
+
+  free(offsets);
 
   /*
   for (i = 0;i < t->i;i++) {
@@ -161,7 +182,7 @@ void tokenizer_write(Tokenizer* t,char *to) {
     printf("%d = %d\n",current_tokID,tok_size);
   }
   */
-
+  fclose(out);
   
 }
 C
