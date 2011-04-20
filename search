@@ -1,0 +1,62 @@
+#!/usr/bin/perl
+use v5.10;
+use Storable;
+use Tokenizer;
+use Postings;
+use Term::ANSIColor qw(:constants);
+use List::MoreUtils qw(any uniq);
+use Encode;
+use warnings;
+use strict;
+say "creating postings...";
+my $postings = PostingsPtr::create("index/postings");
+
+binmode *STDOUT, ':encoding(UTF-8)';
+binmode *STDIN, ':encoding(UTF-8)';
+
+sub highlight {
+    my ($text,$words) = @_;
+    while (1) {
+        if ($text =~ /\G(\w+)/gc) {
+            if (any {$_ eq lc($1)} @{$words}) {
+                print RED,BOLD,$1,RESET;
+                #print GREEN,$1,RESET;
+            } else {
+                print $1;
+            }
+        } elsif ($text =~ /\G(\W+)/gc) {
+            print $1;
+            #print BLUE,$1,RESET;
+        } else {
+            last;
+        }
+    }
+}
+sub slurp {
+    return `cat $_[0]`;
+}
+use Term::ReadLine;
+my $term = new Term::ReadLine 'xxx';
+my $prompt = "? ";
+my $OUT = $term->OUT || \*STDOUT;
+binmode $term->OUT, ':encoding(UTF-8)';
+
+say "loading tokIDs...";
+my $h = retrieve('index/tokIDs');
+while ( defined (my $q = decode('utf8',$term->readline($prompt))) ) {
+  $term->addhistory($q) if $q =~ /\S/;
+  chomp($q);
+  my $q = lc $q;
+  my $tokID = $h->{$q};
+  say "tokID:{$tokID}";
+  my $results = $postings->search($tokID);
+  my @documents = $postings->flatten($results);
+
+  say "documents:",$#documents+1;
+  for my $docID (@documents[0..3]) {
+      last unless defined $docID;
+      say "found:",$docID;
+      my $f = "index/raw/".($docID+1);
+      #    print highlight(decode('utf8',slurp($f)),[$q]);
+  }
+}

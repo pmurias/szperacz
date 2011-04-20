@@ -1,0 +1,4 @@
+TYPEMAP
+Tokenizer*	T_PTROBJ
+Postings*	T_PTROBJ
+Result* 	T_PTROBJ
