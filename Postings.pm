@@ -1,7 +1,7 @@
 package PostingsPtr;
 use strict;
 use warnings;
-use Inline qw(Force Noisy Info);
+use Inline ; #qw(Force Noisy Info);
 use Inline C=><<'C',PREFIX=>'postings_',TYPEMAPS=>'Typemap';
 
 typedef struct Postings {
