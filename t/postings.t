@@ -9,7 +9,7 @@ use v5.10;
 use Tokenizer;
 use Postings;
 
-my $index_file = 'test';#tmpnam();
+my $index_file = tmpnam();
 
 {
     my $tokenizer = TokenizerPtr::create(100);
