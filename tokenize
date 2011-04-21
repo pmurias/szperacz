@@ -11,8 +11,8 @@ use Tokenizer;
 use Storable;
 
 mkdir('index');
-system('ln -s /home/pawel/wyszukiwarka/raw index/raw');
-say "wc -l";
+#system('ln -s /home/pawel/wyszukiwarka/raw index/raw');
+say "wc -l $ARGV[0]";
 my $max = `wc -l $ARGV[0]`;
 my $progress = Term::ProgressBar->new({name => 'Powers', count => $max, remove => 1, ETA=> "linear"});
 open(my $file,$ARGV[0]);
@@ -50,24 +50,6 @@ sub read_file {
     say "storing tokens...";
     store \%h,'index/tokIDs';
 
-}
-sub highlight {
-    my ($text,$words) = @_;
-    while (1) {
-        if ($text =~ /\G(\w+)/gc) {
-            if (any {$_ eq lc($1)} @{$words}) {
-                print RED,BOLD,$1,RESET;
-                #print GREEN,$1,RESET;
-            } else {
-                print $1;
-            }
-        } elsif ($text =~ /\G(\W+)/gc) {
-            print $1;
-            #print BLUE,$1,RESET;
-        } else {
-            last;
-        }
-    }
 }
 
 read_file;
