@@ -3,8 +3,6 @@ use strict;
 use warnings;
 use File::Temp;
 use Test::More;
-use Test::File::Contents;
-use v5.10;
 
 use Tokenizer;
 use Postings;
