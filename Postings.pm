@@ -1,10 +1,13 @@
 package PostingsPtr;
 use strict;
 use warnings;
-use Inline ; #qw(Force Noisy Info);
-use Inline C=><<'C',PREFIX=>'postings_',TYPEMAPS=>'Typemap';
+use Result;
+use Dir::Self;
+use Inline C=><<'C',PREFIX=>'postings_',TYPEMAPS=>'Typemap',INC=>"-I".__DIR__."/include";
 
 #define debugf(args...) if (p->debug) printf(args)
+
+#include "result.h"
 
 typedef struct Postings {
     FILE* file;
@@ -14,10 +17,6 @@ typedef struct Postings {
     int debug;
 } Postings;
 
-typedef struct Result {
-    int size;
-    int* buf;
-} Result;
 
 Postings* postings_create(char* filename) {
     Postings* p = malloc(sizeof(Postings));
@@ -117,27 +116,6 @@ Result* postings_phrase(Postings* p,Result* a,Result* b) {
     return c;
 }
 
-void postings_flatten(Postings* p,Result * r) {
-    Inline_Stack_Vars;
-    Inline_Stack_Reset;
-    int i = 0;
-    while (i < r->size) {
-        int docID = r->buf[i++]; 
-        int docSize = r->buf[i++];
-        Inline_Stack_Push(newSViv(docID));
-        i += docSize;
-    }
-    Inline_Stack_Done;
-}
-void postings_all(Postings* p,Result * r) {
-    Inline_Stack_Vars;
-    Inline_Stack_Reset;
-    int i = 0;
-    while (i < r->size) {
-        Inline_Stack_Push(newSViv(r->buf[i++]));
-    }
-    Inline_Stack_Done;
-}
 C
 sub lookup {
     my ($self,$tokID) = @_;

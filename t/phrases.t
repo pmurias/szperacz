@@ -50,20 +50,17 @@ my $postings = PostingsPtr::create($index_file);
 {
     my $a = $postings->search(1);
     my $b = $postings->search(2);
-    my $phrase_result = $postings->phrase($a,$b);
-    is_deeply([$postings->flatten($phrase_result)],[0,1]);
+    is_deeply($postings->phrase($a,$b)->array,[0,1]);
 }
 {
     my $a = $postings->search(2);
     my $b = $postings->search(1);
-    my $phrase_result = $postings->phrase($a,$b);
-    is_deeply([$postings->flatten($phrase_result)],[1]);
+    is_deeply($postings->phrase($a,$b)->array,[1]);
 }
 {
     my $a = $postings->search(2);
     my $b = $postings->search(2);
-    my $phrase_result = $postings->phrase($a,$b);
-    is_deeply([$postings->flatten($phrase_result)],[]);
+    is_deeply($postings->phrase($a,$b)->array,[]);
 }
 
 

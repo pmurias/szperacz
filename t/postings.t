@@ -29,10 +29,10 @@ my $index_file = tmpnam();
 my $postings = PostingsPtr::create($index_file);
 my $result = $postings->search(0);
 isa_ok($result,"ResultPtr","the search result");
-is_deeply([$postings->flatten($result)],[0,1],"searching for term 0");
-is_deeply([$postings->flatten($postings->search(5))],[1],"searching for term 5");
-is_deeply([$postings->flatten($postings->search(3))],[0],"searching for term 3");
-is_deeply([$postings->flatten($postings->search(4))],[],"searching for non existent term 4");
+is_deeply($result->array,[0,1],"searching for term 0");
+is_deeply($postings->search(5)->array,[1],"searching for term 5");
+is_deeply($postings->search(3)->array,[0],"searching for term 3");
+is_deeply($postings->search(4)->array,[],"searching for non existent term 4");
 
 
 done_testing;
