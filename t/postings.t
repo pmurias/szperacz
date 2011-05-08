@@ -21,6 +21,12 @@ my $index_file = tmpnam();
         $tokenizer->add($token);
     }
 
+    $tokenizer->set_docID(2);
+    $tokenizer->add(7);
+    $tokenizer->add(8);
+    $tokenizer->pos_move(-1);
+    $tokenizer->add(9);
+
     $tokenizer->sort;
     #$tokenizer->print;
     $tokenizer->write($index_file);
@@ -33,6 +39,10 @@ is_deeply($result->array,[0,1],"searching for term 0");
 is_deeply($postings->search(5)->array,[1],"searching for term 5");
 is_deeply($postings->search(3)->array,[0],"searching for term 3");
 is_deeply($postings->search(4)->array,[],"searching for non existent term 4");
+
+is_deeply([$postings->search(7)->all],[2,1,7]);
+is_deeply([$postings->search(8)->all],[2,1,8]);
+is_deeply([$postings->search(9)->all],[2,1,8]);
 
 
 done_testing;
