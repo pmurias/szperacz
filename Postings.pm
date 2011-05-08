@@ -47,6 +47,7 @@ Result* postings_search(Postings* p,int tokID) {
     return r;
 }
 
+
 Result* postings_phrase(Postings* p,Result* a,Result* b) {
     Result* c = (Result*) malloc(sizeof(Result));
 
