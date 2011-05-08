@@ -74,6 +74,12 @@ my $postings = PostingsPtr::create($index_file);
     is_deeply($b->array,[0,2,4,5,6],"just searching for 5");
     is_deeply($c->array,[2,5,6],"just searching for 6");
 }
+{
+    my $a = $postings->search(2);
+    my $b = $postings->search(4);
+
+    is_deeply($a->or($b)->array,[0,1,2,4,6],"searching for 1|4");
+}
 
 
 done_testing;
