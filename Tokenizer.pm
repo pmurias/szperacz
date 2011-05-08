@@ -1,7 +1,6 @@
 package TokenizerPtr;
 use strict;
 use warnings;
-#use Inline qw(Force Noisy Info);
 use Inline C=><<'C',PREFIX=>'tokenizer_',TYPEMAPS=>'Typemap';
 typedef struct pos{
   int tokID;
