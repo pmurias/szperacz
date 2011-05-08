@@ -19,13 +19,16 @@ open(my $file,$ARGV[0]);
 binmode $file, ':encoding(UTF-8)';
 binmode *STDOUT, ':encoding(UTF-8)';
 
+use constant maxTokens => 5_000_000;
+my $part = 0;
+my $tokens = 0;
 
 sub read_file {
     my %h;
     my $next_update = 0;
     my $tokID = 0;
     my $docID = 0;
-    my $tokenizer = TokenizerPtr::create(130000000);
+    my $tokenizer = TokenizerPtr::create(maxTokens);
     while ($_ = <$file>) {
         $next_update = $progress->update($.) if $. >= $next_update;
         if (/^(##TITLE##)(.*)/) {
@@ -39,14 +42,20 @@ sub read_file {
             unless ($h{$tok}) {
                $h{$tok} = $tokID++; 
             }
+
+            if ($tokenizer->bufTop == maxTokens-1) {
+                $tokenizer->sort;
+                $tokenizer->write("index/postings$part");
+                $tokenizer = TokenizerPtr::create(maxTokens);
+                $part++;
+            }
+
             $tokenizer->add($h{$tok});
         }
     }
     $progress->update($max);
     say "updating...";
-    $tokenizer->sort;
     say "writing...";
-    $tokenizer->write('index/postings');
     say "storing tokens...";
     store \%h,'index/tokIDs';
 

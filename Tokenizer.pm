@@ -31,6 +31,10 @@ void tokenizer_pos_move(Tokenizer* t,int offset) {
     t->pos += offset;
 }
 
+int tokenizer_bufTop(Tokenizer* t) {
+    return t->bufTop;
+}
+
 
 /* adds a token to the buffer, requires a previous call to set_docID */
 void tokenizer_add(Tokenizer* t,int tokID) {
