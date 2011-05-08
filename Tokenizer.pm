@@ -2,17 +2,18 @@ package TokenizerPtr;
 use strict;
 use warnings;
 use Inline C=><<'C',PREFIX=>'tokenizer_',TYPEMAPS=>'Typemap';
-typedef struct pos{
+typedef struct occurence {
   int tokID;
   int docID;
   int pos;
-} pos;
+} occurence;
+
 typedef struct Tokenizer {
-  pos *buf;
+  occurence *buf;
   int docID;
   int pos;
   int size;
-  int i;
+  int bufTop;
 } Tokenizer;
 
 /* Creates a tokenizer with space for size tokens */
@@ -21,22 +22,22 @@ Tokenizer* tokenizer_create(int size) {
     t->pos = 0;
     t->docID = 0;
     t->size = size;
-    t->buf = malloc(sizeof(pos) * size);
-    t->i = 0;
+    t->buf = malloc(sizeof(occurence) * size);
+    t->bufTop = 0;
     return t;
 }
 
 /* adds a token to the buffer, requires a previous call to set_docID */
 void tokenizer_add(Tokenizer* t,int tokID) {
-    if (t->i >= t->size) {
+    if (t->bufTop >= t->size) {
         printf("no space in buffer\n");
         return;
     }
-    t->buf[t->i].tokID = tokID;
-    t->buf[t->i].pos = t->pos;
-    t->buf[t->i].docID = t->docID;
+    t->buf[t->bufTop].tokID = tokID;
+    t->buf[t->bufTop].pos = t->pos;
+    t->buf[t->bufTop].docID = t->docID;
     t->pos++;
-    t->i++;
+    t->bufTop++;
 }
 /* sets the docID for the subsequent ->add calls */
 void tokenizer_set_docID(Tokenizer* t,int docID) {
@@ -46,13 +47,13 @@ void tokenizer_set_docID(Tokenizer* t,int docID) {
 /* debugging method that prints out the buffer */
 void tokenizer_print(Tokenizer* t) {
     int i=0;
-    for (i=0;i < t->i;i++) {
+    for (i=0;i < t->bufTop;i++) {
         printf("%d,%d,%d\n",t->buf[i].tokID,t->buf[i].docID,t->buf[i].pos);
     }
 }
-static int pos_cmp(const void* va,const void *vb) {
-  pos* a = (pos*) va;
-  pos* b = (pos*) vb;
+static int occurence_cmp(const void* va,const void *vb) {
+  occurence* a = (occurence*) va;
+  occurence* b = (occurence*) vb;
   /*printf("(%d,%d,%d) ? (%d,%d,%d)\n",a->tokID,a->docID,a->pos,b->tokID,b->docID,b->pos);*/
   int tmp;
   tmp = a->tokID - b->tokID;
@@ -64,7 +65,7 @@ static int pos_cmp(const void* va,const void *vb) {
 
 /* sorts the tokens into a correct order */
 void tokenizer_sort(Tokenizer* t) {
-  qsort(t->buf,t->i,sizeof(pos),pos_cmp);
+  qsort(t->buf,t->bufTop,sizeof(occurence),occurence_cmp);
 }
 
 /* writes out the tokens to a file */
@@ -84,7 +85,7 @@ void tokenizer_write(Tokenizer* t,char *to) {
 
   int terms = 0;
   int current_tokID = -1;
-  while (i < t->i) {
+  while (i < t->bufTop) {
     if (t->buf[i].tokID != current_tokID) {
       current_tokID = t->buf[i].tokID; 
       if (current_tokID >= terms) {
@@ -104,7 +105,7 @@ void tokenizer_write(Tokenizer* t,char *to) {
   i = 0;
   int offset = sizeof(int) * (terms + 1);
 
-  while (i < t->i) {
+  while (i < t->bufTop) {
     int start = i;
     int current_tokID = t->buf[i].tokID; 
     int current_docID = -1;
