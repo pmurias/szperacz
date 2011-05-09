@@ -98,7 +98,6 @@ Result* result_and(Result* a,Result* b) {
 void result_DESTROY(Result* a) {
     free(a->buf);
     free(a);
-    printf("DESTROY %p\n",a);
 }
 Result* result_or(Result* a,Result* b) {
     Result* c = (Result*) malloc(sizeof(Result));
@@ -131,7 +130,7 @@ Result* result_or(Result* a,Result* b) {
 
 
         int a_to = i+a_docSize;
-        int b_to = j+a_docSize;
+        int b_to = j+b_docSize;
 
         while (i < a_to || j < b_to) {
             if (i < a_to) {
@@ -188,6 +187,7 @@ Result* result_or(Result* a,Result* b) {
         c->buf[h++] = b_docSize;
         int b_to = j+b_docSize;
         while (j < b_to) {
+//            printf("h=%d j=%d a->size=%d b->size=%d size=%d\n",h,j,a->size,b->size,size);
             c->buf[h++] = b->buf[j++];
         }
 
@@ -211,3 +211,4 @@ sub array {
     [$self->flatten];
 }
 1;
+## vim: expandtab sw=2 ft=c

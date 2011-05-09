@@ -26,12 +26,12 @@ sub search {
     $postings->search($tokID);
 }
 
-sub and_query {
+sub or_query {
     my ($q) = @_;
-    my @and = split( ' ', $q );
-    my $result = search( shift @and );
-    for my $w (@and) {
-        $result = $result->and( search($w) );
+    my @or = split( '\|', $q );
+    my $result = search( shift @or );
+    for my $w (@or) {
+        $result = $result->or( search($w) );
     }
     $result;
 }
@@ -40,14 +40,24 @@ while ( my $q = <> ) {
     chomp($q);
     my $q = lc $q;
     if ( $q =~ /"(.*)"/ ) {
-        my $parts = split( ' ', $1 );
+        my @parts = split(' ',$1);
+        my $result = search( shift @parts );
+        for my $w (@parts) {
+            $result = $postings->phrase($result, search($w) );
+        }
+        my @documents = $result->flatten;
+        say "documents: ", $#documents + 1;
+        for my $docID (@documents) {
+            say $docID;
+            #    my $f = "/home/pawel/wyszukiwarka/raw/".($docID+1);
+            #print decode_utf8(`head -n 1 $f`);
+        }
     }
     else {
-        my @ors = split( '\|', $q );
-        my $result = and_query( shift @ors );
-        for my $or (@ors) {
-            $result = $result->or( and_query($or) );
-
+        my @ands = split( ' ', $q );
+        my $result = or_query( shift @ands );
+        for my $and (@ands) {
+            $result = $result->and( or_query($and) );
         }
         my @documents = $result->flatten;
         say "documents:", $#documents + 1;
