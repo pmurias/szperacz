@@ -38,7 +38,7 @@ sub read_file {
             if ($tokenizer->bufTop > maxTokens) {
                 $tokenizer->sort;
                 $tokenizer->write("index/postings$part");
-                $tokenizer = TokenizerPtr::create(maxTokens);
+                $tokenizer = TokenizerPtr::create(2*maxTokens);
                 $part++;
             }
             $tokenizer->set_docID($docID++);
