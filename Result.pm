@@ -95,6 +95,11 @@ Result* result_and(Result* a,Result* b) {
     return c;
 
 }
+void result_DESTROY(Result* a) {
+    free(a->buf);
+    free(a);
+    printf("DESTROY %p\n",a);
+}
 Result* result_or(Result* a,Result* b) {
     Result* c = (Result*) malloc(sizeof(Result));
 

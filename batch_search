@@ -1,0 +1,62 @@
+#!/usr/bin/perl
+use v5.10;
+use Storable;
+use Tokenizer;
+use Postings;
+use Term::ANSIColor qw(:constants);
+use List::MoreUtils qw(any uniq);
+use Encode;
+use warnings;
+use strict;
+say "creating postings...";
+my $postings = PostingsPtr::create("index/postings");
+say "got here";
+
+binmode *STDOUT, ':encoding(UTF-8)';
+binmode *STDIN,  ':encoding(UTF-8)';
+
+say "loading tokIDs...";
+my $h = retrieve('index/tokIDs');
+say "loaded IDs...";
+
+sub search {
+    my $word  = shift;
+    my $tokID = $h->{$word};
+    say "tokID $word = $tokID";
+    $postings->search($tokID);
+}
+
+sub and_query {
+    my ($q) = @_;
+    my @and = split( ' ', $q );
+    my $result = search( shift @and );
+    for my $w (@and) {
+        $result = $result->and( search($w) );
+    }
+    $result;
+}
+
+while ( my $q = <> ) {
+    chomp($q);
+    my $q = lc $q;
+    if ( $q =~ /"(.*)"/ ) {
+        my $parts = split( ' ', $1 );
+    }
+    else {
+        my @ors = split( '\|', $q );
+        my $result = and_query( shift @ors );
+        for my $or (@ors) {
+            $result = $result->or( and_query($or) );
+
+        }
+        my @documents = $result->flatten;
+        say "documents:", $#documents + 1;
+        for my $docID (@documents) {
+            #last unless defined $docID;
+            say $docID;
+            #my $f = "/home/pawel/wyszukiwarka/raw/".($docID+1);
+            #print decode_utf8(`head -n 1 $f`);
+        }
+    }
+
+}
