@@ -125,6 +125,22 @@ int get_compressed_len(int * array, int chunk_size) {
     return res;
 }
 
+int get_chunk_size(FILE * compressed_file, int compressed_chunk_size) {
+    int i = 0;
+    int len = 0;
+    int res = 0;
+    int tmp;
+    int file_pos = ftell(compressed_file);
+    while (i < compressed_chunk_size) {
+        tmp = parse_int_from_file(compressed_file, &len);
+        ++res;
+        i += len;
+        len = 0;
+    }
+    fseek(compressed_file, file_pos, SEEK_SET);
+    return res;
+}
+
 unsigned char * parse_array(int * array, int chunk_size, int compressed_chunk_size) {
     unsigned char * res = calloc(compressed_chunk_size, sizeof(unsigned char));
     int i = 0;

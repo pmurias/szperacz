@@ -8,6 +8,7 @@ use Inline C=><<'C',PREFIX=>'postings_',TYPEMAPS=>'Typemap',INC=>"-I".__DIR__."/
 #define debugf(args...) if (p->debug) printf(args)
 
 #include "result.h"
+#include "compress_list.h"
 
 typedef struct Postings {
     FILE* file;
@@ -28,6 +29,41 @@ Postings* postings_create(char* filename) {
     fread((void*)p->offsets,sizeof(int),p->terms,p->file);
     return p;
 }
+
+Postings* postings_create(char * compressed_filename) {
+  int len = 0;
+  Postings * p = malloc(sizeof(Postings));
+  p->filename = compressed_filename;
+  p->file = fopen(compressed_filename, "r");
+  p->terms = parse_int_from_file(p->file, &len);
+  len = 0;
+  p->offsets = (int)malloc(sizeof(int) * p->terms);
+  p->debug = 1;
+  int i;
+  for (i = 0; i < p->terms; ++i) {
+    p->offsets[i] = parse_int_from_file(p->file, &len);
+    len = 0;
+  }
+  return p;
+}
+
+Result * compressed_postings_search(Postings * p, int tokID) {
+    int offset = p->offsets[tokID];
+    int size;
+    if (tokID == p->terms-1) {
+      fseek(p->file,0,SEEK_END);   
+      size = get_chunk_size(p->file, ftell(p->file) - offset);
+    } else {
+      size =  size = get_chunk_size(p->file, p->offsets[tokID+1] - offset);
+    }
+    fseek(p->file,offset,SEEK_SET);
+    int * buf = parse_chunk(p->file, size);
+    Result* r = (Result*) malloc(sizeof(Result));
+    r->buf = buf;
+    r->size = size;
+    return r;
+}
+
 Result* postings_search(Postings* p,int tokID) {
     int offset = p->offsets[tokID];
     int size;
