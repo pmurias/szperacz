@@ -28,10 +28,19 @@ sub read_file {
     my $next_update = 0;
     my $tokID = 0;
     my $docID = 0;
-    my $tokenizer = TokenizerPtr::create(maxTokens);
+
+    # hopefully this will be enough
+    my $tokenizer = TokenizerPtr::create(2*maxTokens);
+
     while ($_ = <$file>) {
         $next_update = $progress->update($.) if $. >= $next_update;
         if (/^(##TITLE##)(.*)/) {
+            if ($tokenizer->bufTop > maxTokens) {
+                $tokenizer->sort;
+                $tokenizer->write("index/postings$part");
+                $tokenizer = TokenizerPtr::create(maxTokens);
+                $part++;
+            }
             $tokenizer->set_docID($docID++);
             $_ = $2;
         }
@@ -43,12 +52,6 @@ sub read_file {
                $h{$tok} = $tokID++; 
             }
 
-            if ($tokenizer->bufTop == maxTokens-1) {
-                $tokenizer->sort;
-                $tokenizer->write("index/postings$part");
-                $tokenizer = TokenizerPtr::create(maxTokens);
-                $part++;
-            }
 
             $tokenizer->add($h{$tok});
         }
