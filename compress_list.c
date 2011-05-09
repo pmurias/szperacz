@@ -19,6 +19,60 @@ unsigned char * compress_int(int n, int * steps) {
     return res;
 }
 
+/* 
+    assume that file is set in a proper position 
+    IMPORTANT call with len set to 0
+*/
+int parse_int_from_file(FILE * compressed_file, int * len) {
+    unsigned char c;
+    int pow = 1;
+    int res = 0;
+    do {
+        fread(&c, sizeof(unsigned char), 1, compressed_file);
+        ++(*len);
+        if (c < 128) {
+            res += c * pow;
+        } else {
+            res += (c - 128) * pow;
+        }
+        pow *= 128;    
+    } while (c < 128);
+    return res;    
+}
+
+/* assume that file is set in a proper position */
+int * parse_chunk(FILE * compressed_file, int chunk_size) {
+    int i = 0;
+    int * array = calloc(chunk_size, sizeof(int));
+    int k = 0;
+    int docID;
+    int posSize;
+    int prev = 0;
+    int el;
+    int len = 0;
+    int j;
+    while (i < chunk_size) {
+        docID = parse_int_from_file(compressed_file, &len);
+        array[k++] = docID;
+        i += len;
+        len = 0;
+        posSize = parse_int_from_file(compressed_file, &len);
+        array[k++] = posSize;
+        i += len;
+        len = 0;
+        for (j = 0; j < posSize; ++j) {
+            el = parse_int_from_file(compressed_file, &len);
+            i += len;
+            len = 0;
+            array[k++] = el - prev;
+            prev = el;
+        }
+        prev = 0;
+        k += posSize;
+    }
+    return array;
+}
+
 int uncompress_int(unsigned char * comp) {
     unsigned char c;
     int pow = 1;
@@ -160,5 +214,5 @@ void compress_file(char * in_file_name, char * out_file_name) {
 }
 
 int main() {
-    compress_file("index/postings2", "index/compressed_postings");
+    compress_file("index/postings_at_once", "index/compressed_postings");
 }
