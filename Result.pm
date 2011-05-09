@@ -110,15 +110,19 @@ Result* result_or(Result* a,Result* b) {
     int a_docID,b_docID,a_docSize,b_docSize;
 
 
-    if (!a->size || !b->size) {
-        c->size = 0;
-        return;
+    if (a->size != 0) {
+        a_docID   = a->buf[i++]; 
+        a_docSize = a->buf[i++];
+    } else {
+        a_docID = INT_MAX;
     }
 
-    a_docID   = a->buf[i++]; 
-    a_docSize = a->buf[i++];
-    b_docID   = b->buf[j++]; 
-    b_docSize = b->buf[j++];
+    if (b->size != 0) {
+        b_docID   = b->buf[j++]; 
+        b_docSize = b->buf[j++];
+    } else {
+        b_docID = INT_MAX;
+    }
 
     while (a_docID != INT_MAX || b_docID != INT_MAX) {
 
