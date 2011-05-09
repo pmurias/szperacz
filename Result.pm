@@ -39,7 +39,7 @@ Result* result_and(Result* a,Result* b) {
 
     if (!a->size || !b->size) {
         c->size = 0;
-        return;
+        return c;
     }
 
     a_docID   = a->buf[i++]; 
