@@ -10,12 +10,13 @@ int compress_int(int n, unsigned char * res) {
         n /= 128;
     }
     res[steps - 1] = (n % 128) + 128;
-    return steps * sizeof(unsigned char);
+    return steps;
 }
 
-void compress_file(FILE * in) {
-  FILE * out = fopen(file_name, "w");
-  if (!out) {
+void compress_file(char * in_file_name, char * out_file_name) {
+  FILE * in = fopen(in_file_name, "w");
+  FILE * out = fopen(out_file_name, "w");
+  if (!out || !in) {
     perror("opening index:");
   }
   int terms;
@@ -23,6 +24,7 @@ void compress_file(FILE * in) {
   fwrite(&terms, sizeof(int), 1, out);
   int i;
   int dummy = 0;
+  /* Make space for offsets */
   for (i = 0; i < terms; ++i) {
     fwrite(&dummy, sizeof(int), terms, out);      
   }
@@ -32,7 +34,16 @@ void compress_file(FILE * in) {
   int list_len;
   int j;
   for (i = 0; i < terms; ++i) {
+    fseek(in, (i + 1) * sizeof(int), SEEK_SET);
     fread(&offset, sizeof(int), 1, in);
+    int next_offset;
+    if (i == terms - 1) {
+        fseek(in, 0, SEEK_END);
+        next_offset = ftell(in);
+    } else {
+        fread(&next_offset, sizeof(int), 1, in);
+    }
+    int chunk_size = next_offset - offset;
     if (offset) {
         int next = 0;
         do {
