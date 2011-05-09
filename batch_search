@@ -1,0 +1,72 @@
+#!/usr/bin/perl
+use v5.10;
+use Storable;
+use Tokenizer;
+use Postings;
+use Term::ANSIColor qw(:constants);
+use List::MoreUtils qw(any uniq);
+use Encode;
+use warnings;
+use strict;
+say "creating postings...";
+my $postings = PostingsPtr::create("index/postings");
+say "got here";
+
+binmode *STDOUT, ':encoding(UTF-8)';
+binmode *STDIN,  ':encoding(UTF-8)';
+
+say "loading tokIDs...";
+my $h = retrieve('index/tokIDs');
+say "loaded IDs...";
+
+sub search {
+    my $word  = shift;
+    my $tokID = $h->{$word};
+    say "tokID $word = $tokID";
+    $postings->search($tokID);
+}
+
+sub or_query {
+    my ($q) = @_;
+    my @or = split( '\|', $q );
+    my $result = search( shift @or );
+    for my $w (@or) {
+        $result = $result->or( search($w) );
+    }
+    $result;
+}
+
+while ( my $q = <> ) {
+    chomp($q);
+    my $q = lc $q;
+    if ( $q =~ /"(.*)"/ ) {
+        my @parts = split(' ',$1);
+        my $result = search( shift @parts );
+        for my $w (@parts) {
+            $result = $postings->phrase($result, search($w) );
+        }
+        my @documents = $result->flatten;
+        say "documents: ", $#documents + 1;
+        for my $docID (@documents) {
+            say $docID;
+            #    my $f = "/home/pawel/wyszukiwarka/raw/".($docID+1);
+            #print decode_utf8(`head -n 1 $f`);
+        }
+    }
+    else {
+        my @ands = split( ' ', $q );
+        my $result = or_query( shift @ands );
+        for my $and (@ands) {
+            $result = $result->and( or_query($and) );
+        }
+        my @documents = $result->flatten;
+        say "documents:", $#documents + 1;
+        for my $docID (@documents) {
+            #last unless defined $docID;
+            say $docID;
+            #my $f = "/home/pawel/wyszukiwarka/raw/".($docID+1);
+            #print decode_utf8(`head -n 1 $f`);
+        }
+    }
+
+}

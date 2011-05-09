@@ -39,7 +39,7 @@ Result* result_and(Result* a,Result* b) {
 
     if (!a->size || !b->size) {
         c->size = 0;
-        return;
+        return c;
     }
 
     a_docID   = a->buf[i++]; 
@@ -95,6 +95,10 @@ Result* result_and(Result* a,Result* b) {
     return c;
 
 }
+void result_DESTROY(Result* a) {
+    free(a->buf);
+    free(a);
+}
 Result* result_or(Result* a,Result* b) {
     Result* c = (Result*) malloc(sizeof(Result));
 
@@ -106,15 +110,19 @@ Result* result_or(Result* a,Result* b) {
     int a_docID,b_docID,a_docSize,b_docSize;
 
 
-    if (!a->size || !b->size) {
-        c->size = 0;
-        return;
+    if (a->size != 0) {
+        a_docID   = a->buf[i++]; 
+        a_docSize = a->buf[i++];
+    } else {
+        a_docID = INT_MAX;
     }
 
-    a_docID   = a->buf[i++]; 
-    a_docSize = a->buf[i++];
-    b_docID   = b->buf[j++]; 
-    b_docSize = b->buf[j++];
+    if (b->size != 0) {
+        b_docID   = b->buf[j++]; 
+        b_docSize = b->buf[j++];
+    } else {
+        b_docID = INT_MAX;
+    }
 
     while (a_docID != INT_MAX || b_docID != INT_MAX) {
 
@@ -126,7 +134,7 @@ Result* result_or(Result* a,Result* b) {
 
 
         int a_to = i+a_docSize;
-        int b_to = j+a_docSize;
+        int b_to = j+b_docSize;
 
         while (i < a_to || j < b_to) {
             if (i < a_to) {
@@ -183,6 +191,7 @@ Result* result_or(Result* a,Result* b) {
         c->buf[h++] = b_docSize;
         int b_to = j+b_docSize;
         while (j < b_to) {
+//            printf("h=%d j=%d a->size=%d b->size=%d size=%d\n",h,j,a->size,b->size,size);
             c->buf[h++] = b->buf[j++];
         }
 
@@ -206,3 +215,4 @@ sub array {
     [$self->flatten];
 }
 1;
+## vim: expandtab sw=2 ft=c
