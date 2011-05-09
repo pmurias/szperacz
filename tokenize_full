@@ -1,0 +1,55 @@
+#!/usr/bin/perl
+use v5.10;
+use strict;
+use warnings;
+
+use Encode;
+use List::MoreUtils qw(any);
+use Term::ANSIColor qw(:constants);
+use Term::ProgressBar;
+use Tokenizer;
+use Storable;
+
+mkdir('index');
+#system('ln -s /home/pawel/wyszukiwarka/raw index/raw');
+say "wc -l $ARGV[0]";
+my $max = `wc -l $ARGV[0]`;
+my $progress = Term::ProgressBar->new({name => 'Powers', count => $max, remove => 1, ETA=> "linear"});
+open(my $file,$ARGV[0]);
+binmode $file, ':encoding(UTF-8)';
+binmode *STDOUT, ':encoding(UTF-8)';
+
+
+sub read_file {
+    my %h;
+    my $next_update = 0;
+    my $tokID = 0;
+    my $docID = 0;
+    my $tokenizer = TokenizerPtr::create(130000000);
+    while ($_ = <$file>) {
+        $next_update = $progress->update($.) if $. >= $next_update;
+        if (/^(##TITLE##)(.*)/) {
+            $tokenizer->set_docID($docID++);
+            $_ = $2;
+        }
+        my @tokens = split(/\W+/);
+        for (@tokens) {
+            next unless $_;
+            my $tok = lc $_;
+            unless ($h{$tok}) {
+               $h{$tok} = $tokID++; 
+            }
+            $tokenizer->add($h{$tok});
+        }
+    }
+    $progress->update($max);
+    say "updating...";
+    $tokenizer->sort;
+    say "writing...";
+    $tokenizer->write('index/postings');
+    say "storing tokens...";
+    store \%h,'index/tokIDs';
+
+}
+
+read_file;
