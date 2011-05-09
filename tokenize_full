@@ -46,7 +46,7 @@ sub read_file {
     say "updating...";
     $tokenizer->sort;
     say "writing...";
-    $tokenizer->write('index/postings');
+    $tokenizer->write('index/postings_at_once');
     say "storing tokens...";
     store \%h,'index/tokIDs';
 
