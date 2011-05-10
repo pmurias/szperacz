@@ -20,34 +20,16 @@ typedef struct Postings {
 } Postings;
 
 
-Postings* postings_create_uncompressed(char* filename) {
+Postings* postings_create(char * filename, int compressed) {
     Postings* p = malloc(sizeof(Postings));
     p->filename = filename;
     p->file = fopen(filename,"r");
     fread(&p->terms,sizeof(int),1,p->file);
     p->offsets = (int) malloc(sizeof(int) * p->terms);
     p->debug = 1;
-    p->compressed = 0;
+    p->compressed = compressed;
     fread((void*)p->offsets,sizeof(int),p->terms,p->file);
     return p;
-}
-
-Postings* postings_create_compressed(char * compressed_filename) {
-  int len = 0;
-  Postings * p = malloc(sizeof(Postings));
-  p->filename = compressed_filename;
-  p->file = fopen(compressed_filename, "r");
-  p->terms = parse_int_from_file(p->file, &len);
-  len = 0;
-  p->offsets = (int)malloc(sizeof(int) * p->terms);
-  p->debug = 1;
-  p->compressed = 1;
-  int i;
-  for (i = 0; i < p->terms; ++i) {
-    p->offsets[i] = parse_int_from_file(p->file, &len);
-    len = 0;
-  }
-  return p;
 }
 
 /* 
