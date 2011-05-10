@@ -78,6 +78,11 @@ void tokenizer_sort(Tokenizer* t) {
   qsort(t->buf,t->bufTop,sizeof(occurence),occurence_cmp);
 }
 
+void tokenizer_DESTROY(Tokenizer* t) {
+   free(t->buf); 
+   free(t); 
+}
+
 /* writes out the tokens to a file */
 #define wrt(X) fwrite(&X,1,sizeof(int),out);
 void tokenizer_write(Tokenizer* t,char *to) {

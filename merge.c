@@ -23,7 +23,7 @@ int chunk_size(file f,int tokID)
 
 int main()
 {
-    int parts = 1;
+    int parts = 25;
     int i;
 
     file out;
@@ -39,6 +39,7 @@ int main()
     char filename[100];
     for (i = 0; i < parts; i++) {
 	sprintf(filename, "index/postings%d", i);
+        printf("%s\n",filename);
 	input[i].f = fopen(filename, "r");
 	fread(&input[i].terms, sizeof(int), 1, input[i].f);
 
@@ -48,6 +49,7 @@ int main()
 	if (input[i].terms > out.terms)
 	    out.terms = input[i].terms;
     }
+    printf("%d\n",out.terms);
 
 
     out.offsets = calloc(out.terms,sizeof(int));

@@ -1,7 +1,6 @@
 #!/usr/bin/perl
 use v5.10;
 use Storable;
-use Tokenizer;
 use Postings;
 use Term::ANSIColor qw(:constants);
 use List::MoreUtils qw(any uniq);

@@ -60,6 +60,11 @@ sub read_file {
     say "updating...";
     say "writing...";
     say "storing tokens...";
+
+    $tokenizer->sort;
+    $tokenizer->write("index/postings$part");
+    $part++;
+
     store \%h,'index/tokIDs';
 
 }
