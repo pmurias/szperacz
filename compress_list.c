@@ -186,20 +186,22 @@ unsigned char * parse_array(int * array, int chunk_size, int compressed_chunk_si
 void compress_file(char * in_file_name, char * out_file_name) {
   FILE * in = fopen(in_file_name, "r");
   FILE * out = fopen(out_file_name, "w");
-  FILE * tmp = fopen("index/tmp_file", "w");
   if (!out || !in) {
     perror("opening index:");
   }
   int terms;
   fread(&terms, sizeof(int), 1, in);
   int len;
-  unsigned char * compressed_terms = compress_int(terms, &len);
-  fwrite(compressed_terms, sizeof(unsigned char), len, out);
+  fwrite(&terms, sizeof(int), 1, out);
   int i;
   int offset;
   int next_offset;
-  int written_to_tmp = 0;
+  int * offsets = calloc(terms, sizeof(int)); 
+  int acc = 0;
+  /* Make room for offsets */
+  fwrite(offsets, sizeof(int), terms, out);
   for (i = 0; i < terms; ++i) {
+    offsets[i] = ftell(out) + acc;
     fseek(in, (i + 1) * sizeof(int), SEEK_SET);
     fread(&offset, sizeof(int), 1, in);
     if (i == terms - 1) {
@@ -214,17 +216,11 @@ void compress_file(char * in_file_name, char * out_file_name) {
     fread(array, sizeof(int), chunk_size, in);
     int compressed_chunk_size = get_compressed_len(array, chunk_size);
     unsigned char * compressed_chunk = parse_array(array, chunk_size, compressed_chunk_size);
-    fwrite(compress_int(compressed_chunk_size, &len), sizeof(unsigned char), len, out);
-    fwrite(compressed_chunk, sizeof(unsigned char), compressed_chunk_size, tmp);
-    written_to_tmp += compressed_chunk_size;
+    acc += compressed_chunk_size * sizeof(unsigned char);
+    fwrite(compressed_chunk, sizeof(unsigned char), compressed_chunk_size, out);
   }
-  rewind(tmp);
-  unsigned char c;
-  for (i = 0; i < written_to_tmp; ++i) {
-    fread(&c, sizeof(unsigned char), 1, tmp);
-    fwrite(&c, sizeof(unsigned char), 1, out);
-  }
-  fclose(tmp);
+  fseek(out, sizeof(int), SEEK_SET);
+  fwrite(offsets, sizeof(int), terms, out);     
   fclose(in);
   fclose(out);
 }
