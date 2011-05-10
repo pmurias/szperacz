@@ -37,10 +37,11 @@ my @docs = (
 
 {
     my $tokenizer = TokenizerPtr::create(100);
+
+    my $pos = 0;
     for my $docID (0..$#docs) {
-        $tokenizer->set_docID($docID);
         for my $tokID (@{$docs[$docID]}) {
-            $tokenizer->add($tokID);
+            $tokenizer->add($tokID,$docID,$pos++);
         }
     }
 

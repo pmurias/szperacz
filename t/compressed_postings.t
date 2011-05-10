@@ -1,15 +1,21 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use File::Temp;
+use File::Temp qw(tempfile tmpnam);
 use Test::More;
 
 use Tokenizer;
 use Postings;
 
+use Index::Compress;
+
 my $index_file = tmpnam();
 
+my ($fh,$compressed_index_file) = tempfile(SUFFIX=>'.compressed');
+close($fh);
+
 {
+
     my $tokenizer = TokenizerPtr::create(100);
     my $docID;
     my $pos = 0;
@@ -30,9 +36,10 @@ my $index_file = tmpnam();
     $tokenizer->sort;
     #$tokenizer->print;
     $tokenizer->write($index_file);
+    Index::Compress::compress_file($index_file, $compressed_index_file);
 }
 
-my $postings = PostingsPtr::create($index_file);
+my $postings = PostingsPtr::create($compressed_index_file);
 my $result = $postings->search(0);
 isa_ok($result,"ResultPtr","the search result");
 is_deeply($result->array,[0,1],"searching for term 0");
