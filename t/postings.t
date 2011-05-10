@@ -11,21 +11,21 @@ my $index_file = tmpnam();
 
 {
     my $tokenizer = TokenizerPtr::create(100);
-    $tokenizer->set_docID(0);
+    my $docID;
+    my $pos = 0;
+    $docID = 0;
     for my $token (0,1,2,3) {
-        $tokenizer->add($token);
+        $tokenizer->add($token,$docID,$pos++);
     }
 
-    $tokenizer->set_docID(1);
+    $docID = 1;
     for my $token (0,1,5) {
-        $tokenizer->add($token);
+        $tokenizer->add($token,$docID,$pos++);
     }
 
-    $tokenizer->set_docID(2);
-    $tokenizer->add(7);
-    $tokenizer->add(8);
-    $tokenizer->pos_move(-1);
-    $tokenizer->add(9);
+    $tokenizer->add(7,2,$pos++);
+    $tokenizer->add(8,2,$pos);
+    $tokenizer->add(9,2,$pos++);
 
     $tokenizer->sort;
     #$tokenizer->print;

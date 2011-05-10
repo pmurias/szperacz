@@ -10,8 +10,6 @@ typedef struct occurence {
 
 typedef struct Tokenizer {
   occurence *buf;
-  int docID;
-  int pos;
   int size;
   int bufTop;
 } Tokenizer;
@@ -19,40 +17,30 @@ typedef struct Tokenizer {
 /* Creates a tokenizer with space for size tokens */
 Tokenizer* tokenizer_create(int size) {
     Tokenizer* t = malloc(sizeof(Tokenizer));
-    t->pos = 0;
-    t->docID = 0;
     t->size = size;
     t->buf = malloc(sizeof(occurence) * size);
     t->bufTop = 0;
     return t;
 }
 
-void tokenizer_pos_move(Tokenizer* t,int offset) {
-    t->pos += offset;
-}
 
 int tokenizer_bufTop(Tokenizer* t) {
     return t->bufTop;
 }
 
 
-/* adds a token to the buffer, requires a previous call to set_docID */
-void tokenizer_add(Tokenizer* t,int tokID) {
+/* adds a token to the buffer */
+void tokenizer_add(Tokenizer* t,int tokID,int docID,int pos) {
     if (t->bufTop >= t->size) {
         printf("no space in buffer\n");
         return;
     }
     t->buf[t->bufTop].tokID = tokID;
-    t->buf[t->bufTop].pos = t->pos;
-    t->buf[t->bufTop].docID = t->docID;
-    t->pos++;
+    t->buf[t->bufTop].docID = docID;
+    t->buf[t->bufTop].pos = pos;
     t->bufTop++;
 }
 
-/* sets the docID for the subsequent ->add calls */
-void tokenizer_set_docID(Tokenizer* t,int docID) {
-    t->docID = docID;
-}
 
 /* debugging method that prints out the buffer */
 void tokenizer_print(Tokenizer* t) {

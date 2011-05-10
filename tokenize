@@ -27,7 +27,8 @@ sub read_file {
     my %h;
     my $next_update = 0;
     my $tokID = 0;
-    my $docID = 0;
+    my $docID = -1;
+    my $pos = 0;
 
     # hopefully this will be enough
     my $tokenizer = TokenizerPtr::create(2*maxTokens);
@@ -41,7 +42,7 @@ sub read_file {
                 $tokenizer = TokenizerPtr::create(2*maxTokens);
                 $part++;
             }
-            $tokenizer->set_docID($docID++);
+            $docID++;
             $_ = $2;
         }
         my @tokens = split(/\W+/);
@@ -53,7 +54,7 @@ sub read_file {
             }
 
 
-            $tokenizer->add($h{$tok});
+            $tokenizer->add($h{$tok},$docID,$pos++);
         }
     }
     $progress->update($max);

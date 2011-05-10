@@ -8,9 +8,10 @@ use Tokenizer;
 my $tokenizer = TokenizerPtr::create(20);
 pass "lives after calling create";
 
-$tokenizer->set_docID(13);
+my $pos = 0;
+my $docID = 13;
 for my $token (100,234,534,12) {
-    $tokenizer->add($token);
+    $tokenizer->add($token,$docID,$pos++);
 }
 
 my $file = tmpnam();
