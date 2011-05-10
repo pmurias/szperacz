@@ -16,21 +16,23 @@ typedef struct Postings {
     int* offsets;
     int terms;
     int debug;
+    int compressed;
 } Postings;
 
 
-Postings* postings_create(char* filename) {
+Postings* postings_create_uncompressed(char* filename) {
     Postings* p = malloc(sizeof(Postings));
     p->filename = filename;
     p->file = fopen(filename,"r");
     fread(&p->terms,sizeof(int),1,p->file);
     p->offsets = (int) malloc(sizeof(int) * p->terms);
     p->debug = 1;
+    p->compressed = 0;
     fread((void*)p->offsets,sizeof(int),p->terms,p->file);
     return p;
 }
 
-Postings* postings_create(char * compressed_filename) {
+Postings* postings_create_compressed(char * compressed_filename) {
   int len = 0;
   Postings * p = malloc(sizeof(Postings));
   p->filename = compressed_filename;
@@ -39,12 +41,83 @@ Postings* postings_create(char * compressed_filename) {
   len = 0;
   p->offsets = (int)malloc(sizeof(int) * p->terms);
   p->debug = 1;
+  p->compressed = 1;
   int i;
   for (i = 0; i < p->terms; ++i) {
     p->offsets[i] = parse_int_from_file(p->file, &len);
     len = 0;
   }
   return p;
+}
+
+/* 
+    assume that file is set in a proper position 
+    IMPORTANT call with len set to 0
+*/
+int parse_int_from_file(FILE * compressed_file, int * len) {
+    unsigned char c;
+    int pow = 1;
+    int res = 0;
+    do {
+        fread(&c, sizeof(unsigned char), 1, compressed_file);
+        ++(*len);
+        if (c < 128) {
+            res += c * pow;
+        } else {
+            res += (c - 128) * pow;
+        }
+        pow *= 128;    
+    } while (c < 128);
+    return res;    
+}
+
+/* assume that file is set in a proper position */
+int * parse_chunk(FILE * compressed_file, int chunk_size) {
+    int i = 0;
+    int * array = calloc(chunk_size, sizeof(int));
+    int k = 0;
+    int docID;
+    int posSize;
+    int prev = 0;
+    int el;
+    int len = 0;
+    int j;
+    while (i < chunk_size) {
+        docID = parse_int_from_file(compressed_file, &len);
+        array[k++] = docID;
+        i += len;
+        len = 0;
+        posSize = parse_int_from_file(compressed_file, &len);
+        array[k++] = posSize;
+        i += len;
+        len = 0;
+        for (j = 0; j < posSize; ++j) {
+            el = parse_int_from_file(compressed_file, &len);
+            i += len;
+            len = 0;
+            array[k++] = el - prev;
+            prev = el;
+        }
+        prev = 0;
+        k += posSize;
+    }
+    return array;
+}
+
+int get_chunk_size(FILE * compressed_file, int compressed_chunk_size) {
+    int i = 0;
+    int len = 0;
+    int res = 0;
+    int tmp;
+    int file_pos = ftell(compressed_file);
+    while (i < compressed_chunk_size) {
+        tmp = parse_int_from_file(compressed_file, &len);
+        ++res;
+        i += len;
+        len = 0;
+    }
+    fseek(compressed_file, file_pos, SEEK_SET);
+    return res;
 }
 
 Result * compressed_postings_search(Postings * p, int tokID) {
@@ -65,6 +138,7 @@ Result * compressed_postings_search(Postings * p, int tokID) {
 }
 
 Result* postings_search(Postings* p,int tokID) {
+    if (p->compressed) return compressed_postings_search(p,tokID);
     int offset = p->offsets[tokID];
     int size;
     if (tokID == p->terms-1) {
@@ -154,9 +228,13 @@ Result* postings_phrase(Postings* p,Result* a,Result* b) {
 }
 
 C
-sub lookup {
-    my ($self,$tokID) = @_;
-    $self->flatten($self->search($tokID));
+sub create {
+    my ($filename) = @_;
+    if ($filename =~ /.compressed$/) {
+        create_compressed($filename);        
+    } else {
+        create_uncompressed($filename);
+    }
 }
 1;
 ## vim: expandtab sw=2 ft=c

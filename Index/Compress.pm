@@ -1,3 +1,7 @@
+package Index::Compress;
+use strict;
+use warnings;
+use Inline C=><<'C';
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -19,6 +23,59 @@ unsigned char * compress_int(int n, int * steps) {
     return res;
 }
 
+/* 
+    assume that file is set in a proper position 
+    IMPORTANT call with len set to 0
+*/
+int parse_int_from_file(FILE * compressed_file, int * len) {
+    unsigned char c;
+    int pow = 1;
+    int res = 0;
+    do {
+        fread(&c, sizeof(unsigned char), 1, compressed_file);
+        ++(*len);
+        if (c < 128) {
+            res += c * pow;
+        } else {
+            res += (c - 128) * pow;
+        }
+        pow *= 128;    
+    } while (c < 128);
+    return res;    
+}
+
+/* assume that file is set in a proper position */
+int * parse_chunk(FILE * compressed_file, int chunk_size) {
+    int i = 0;
+    int * array = calloc(chunk_size, sizeof(int));
+    int k = 0;
+    int docID;
+    int posSize;
+    int prev = 0;
+    int el;
+    int len = 0;
+    int j;
+    while (i < chunk_size) {
+        docID = parse_int_from_file(compressed_file, &len);
+        array[k++] = docID;
+        i += len;
+        len = 0;
+        posSize = parse_int_from_file(compressed_file, &len);
+        array[k++] = posSize;
+        i += len;
+        len = 0;
+        for (j = 0; j < posSize; ++j) {
+            el = parse_int_from_file(compressed_file, &len);
+            i += len;
+            len = 0;
+            array[k++] = el - prev;
+            prev = el;
+        }
+        prev = 0;
+        k += posSize;
+    }
+    return array;
+}
 
 int uncompress_int(unsigned char * comp) {
     unsigned char c;
@@ -72,6 +129,21 @@ int get_compressed_len(int * array, int chunk_size) {
     return res;
 }
 
+int get_chunk_size(FILE * compressed_file, int compressed_chunk_size) {
+    int i = 0;
+    int len = 0;
+    int res = 0;
+    int tmp;
+    int file_pos = ftell(compressed_file);
+    while (i < compressed_chunk_size) {
+        tmp = parse_int_from_file(compressed_file, &len);
+        ++res;
+        i += len;
+        len = 0;
+    }
+    fseek(compressed_file, file_pos, SEEK_SET);
+    return res;
+}
 
 unsigned char * parse_array(int * array, int chunk_size, int compressed_chunk_size) {
     unsigned char * res = calloc(compressed_chunk_size, sizeof(unsigned char));
@@ -160,7 +232,6 @@ void compress_file(char * in_file_name, char * out_file_name) {
   fclose(in);
   fclose(out);
 }
-
-int main() {
-    compress_file("index/postings_at_once", "index/compressed_postings");
-}
+C
+1;
+## vim: expandtab sw=2 ft=c
