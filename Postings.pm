@@ -52,9 +52,8 @@ int parse_int_from_file(FILE * compressed_file, int * len) {
     } while (c < 128);
     return res;    
 }
-
 /* assume that file is set in a proper position */
-int * parse_chunk(FILE * compressed_file, int chunk_size) {
+int * parse_chunk(FILE * compressed_file, int chunk_size, int compressed_chunk_size) {
     int i = 0;
     int * array = calloc(chunk_size, sizeof(int));
     int k = 0;
@@ -64,7 +63,8 @@ int * parse_chunk(FILE * compressed_file, int chunk_size) {
     int el;
     int len = 0;
     int j;
-    while (i < chunk_size) {
+    int acc = 0;
+    while (i < compressed_chunk_size) {
         docID = parse_int_from_file(compressed_file, &len);
         array[k++] = docID;
         i += len;
@@ -77,11 +77,10 @@ int * parse_chunk(FILE * compressed_file, int chunk_size) {
             el = parse_int_from_file(compressed_file, &len);
             i += len;
             len = 0;
-            array[k++] = el - prev;
-            prev = el;
+            acc += el;
+            array[k++] = acc;
         }
-        prev = 0;
-        k += posSize;
+        acc = 0;
     }
     return array;
 }
@@ -104,15 +103,18 @@ int get_chunk_size(FILE * compressed_file, int compressed_chunk_size) {
 
 Result * compressed_postings_search(Postings * p, int tokID) {
     int offset = p->offsets[tokID];
+    int end_offset;
     int size;
     if (tokID == p->terms-1) {
       fseek(p->file,0,SEEK_END);   
-      size = get_chunk_size(p->file, ftell(p->file) - offset);
+      end_offset = ftell(p->file);
     } else {
-      size =  size = get_chunk_size(p->file, p->offsets[tokID+1] - offset);
+      end_offset = p->offsets[tokID+1];
     }
+    int compressed_chunk_size = (end_offset - offset) / sizeof(unsigned char);
+    size = get_chunk_size(p->file, compressed_chunk_size);
     fseek(p->file,offset,SEEK_SET);
-    int * buf = parse_chunk(p->file, size);
+    int * buf = parse_chunk(p->file, size, compressed_chunk_size);
     Result* r = (Result*) malloc(sizeof(Result));
     r->buf = buf;
     r->size = size;

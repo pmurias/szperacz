@@ -1,6 +1,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 /* compress integer and return result bytes */
 unsigned char * compress_int(int n, int * steps) {
@@ -111,7 +112,59 @@ unsigned char * parse_array(int * array, int chunk_size, int compressed_chunk_si
         prev = 0;
         i += posSize;         
     }
+    //printf("res = %s\n", res);
     return res;
+}
+
+int parse_int_from_file(FILE * compressed_file, int * len) {
+    unsigned char c;
+    int pow = 1;
+    int res = 0;
+    do {
+        fread(&c, sizeof(unsigned char), 1, compressed_file);
+        //printf("c = %d\n", c);
+        ++(*len);
+        if (c < 128) {
+            res += c * pow;
+        } else {
+            res += (c - 128) * pow;
+        }
+        pow *= 128;    
+    } while (c < 128);
+    //printf("res = %d\n", res);
+    return res;    
+}
+
+int * parse_chunk(FILE * compressed_file, int chunk_size, int compressed_chunk_size) {
+    int i = 0;
+    int * array = calloc(chunk_size, sizeof(int));
+    int k = 0;
+    int docID;
+    int posSize;
+    int prev = 0;
+    int el;
+    int len = 0;
+    int j;
+    int acc = 0;
+    while (i < compressed_chunk_size) {
+        docID = parse_int_from_file(compressed_file, &len);
+        array[k++] = docID;
+        i += len;
+        len = 0;
+        posSize = parse_int_from_file(compressed_file, &len);
+        array[k++] = posSize;
+        i += len;
+        len = 0;
+        for (j = 0; j < posSize; ++j) {
+            el = parse_int_from_file(compressed_file, &len);
+            i += len;
+            len = 0;
+            acc += el;
+            array[k++] = acc;
+        }
+        acc = 0;
+    }
+    return array;
 }
 
 
@@ -129,11 +182,11 @@ void compress_file(char * in_file_name, char * out_file_name) {
   int offset;
   int next_offset;
   int * offsets = calloc(terms, sizeof(int)); 
-  int acc = 0;
+  int j = 0;
   /* Make room for offsets */
   fwrite(offsets, sizeof(int), terms, out);
   for (i = 0; i < terms; ++i) {
-    offsets[i] = ftell(out) + acc;
+    offsets[i] = ftell(out);
     fseek(in, (i + 1) * sizeof(int), SEEK_SET);
     fread(&offset, sizeof(int), 1, in);
     if (i == terms - 1) {
@@ -142,13 +195,13 @@ void compress_file(char * in_file_name, char * out_file_name) {
     } else {
         fread(&next_offset, sizeof(int), 1, in);
     }
+    /* number of ints in chunk */
     int chunk_size = (next_offset - offset) / sizeof(int);
     int * array = calloc(chunk_size, sizeof(int));
     fseek(in, offset, SEEK_SET);
-    fread(array, sizeof(int), chunk_size, in);
+    fread(array, sizeof(int), chunk_size, in);    
     int compressed_chunk_size = get_compressed_len(array, chunk_size);
     unsigned char * compressed_chunk = parse_array(array, chunk_size, compressed_chunk_size);
-    acc += compressed_chunk_size * sizeof(unsigned char);
     fwrite(compressed_chunk, sizeof(unsigned char), compressed_chunk_size, out);
   }
   fseek(out, sizeof(int), SEEK_SET);
@@ -158,5 +211,5 @@ void compress_file(char * in_file_name, char * out_file_name) {
 }
 
 int main() {
-    compress_file("index/postings_at_once", "index/compressed_postings");
+    compress_file("index/postings1", "index/postings1_compress");
 }
