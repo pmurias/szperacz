@@ -9,25 +9,28 @@ use Encode;
 use Morfologik;
 use warnings;
 use strict;
-say "creating postings...";
+sub debug {
+    #say "# ",@_;
+}
+debug "creating postings...";
 my $postings = PostingsPtr::create("index/postings_full");
-say "got here";
+debug "got here";
 
 binmode *STDOUT, ':encoding(UTF-8)';
 binmode *STDIN,  ':encoding(UTF-8)';
 
-say "loading tokIDs...";
+debug "loading tokIDs...";
 my $h = retrieve('index/tokIDs');
-say "loading morfologik...";
+debug "loading morfologik...";
 Morfologik::load('m1');
-say "enter query";
+debug "enter query";
 
 sub search {
     my $tokID  = shift;
 #    my $tokID = $h->{$word};
 #    say "tokID $word = $tokID";
     if ($tokID != -1) {
-        say "searching for tokID: $tokID";
+        #say "searching for tokID: $tokID";
         $postings->search($tokID);
     } else {
         $postings->empty();
@@ -40,7 +43,7 @@ sub to_id {
 }
 sub possible {
     my $tok = shift;
-    say "all possibilites for $tok:",join(',',@{Morfologik::get(lc $tok)});
+    #debug "all possibilites for $tok:",join(',',@{Morfologik::get(lc $tok)});
     map {to_id($_)} @{Morfologik::get(lc $tok)};
 }
 
@@ -65,6 +68,14 @@ sub title {
     $title;
 }
 
+sub report {
+    my ($query,$result) = @_;
+    my @documents = $result->flatten;
+    say "QUERY: $query TOTAL: ", $#documents + 1;
+    for my $docID (@documents[0..4]) {
+        say title($docID);
+    }
+}
 
 while ( my $q = <> ) {
     chomp($q);
@@ -75,11 +86,7 @@ while ( my $q = <> ) {
         for my $w (@parts) {
             $result = $postings->phrase($result, search($w) );
         }
-        my @documents = $result->flatten;
-        say "documents: ", $#documents + 1;
-        for my $docID (@documents) {
-            say $docID;
-        }
+        report($q,$result);
     }
     else {
         my @ands = split( ' ', $q );
@@ -87,13 +94,7 @@ while ( my $q = <> ) {
         for my $and (@ands) {
             $result = $result->and( or_query($and) );
         }
-        my @documents = $result->flatten;
-        say "documents:", $#documents + 1;
-        for my $docID (@documents[0..4]) {
-            #last unless defined $docID;
-            say $docID;
-            say title($docID);
-        }
+        report($q,$result);
     }
 
 }
