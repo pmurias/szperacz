@@ -1,0 +1,30 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use v5.10;
+use utf8::all;
+open(my $morfologik,'morfologik_do_wyszukiwarek.txt');
+#open(my $morfologik,'m100');
+my %cut;
+sub prefix {
+    my $word = shift;;
+    $word =~ s/^(nie|naj)+//;
+    $word;
+}
+while (my $word = <$morfologik>) {
+    chomp($word);
+    my @words = split(/ /,$word);
+#    say "$words[0] $words[1]";
+    my $common = 0;
+    my $a = prefix($words[0]);
+    my $b = prefix($words[1]);
+    while ($common < length($a) && substr($a,0,$common+1) eq substr($b,0,$common+1)) {
+        $common++;
+    }
+    if ($common) {
+        $cut{substr($a,$common)}++;
+    }
+}
+for (sort {length($b) <=> length($a)} keys %cut) {
+    say $_;
+}

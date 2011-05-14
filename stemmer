@@ -1,0 +1,23 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use v5.10;
+use utf8::all;
+open(my $suffix,'stemmer.data');
+my @suffix = <$suffix>;
+chomp(@suffix);
+sub prefix {
+    my $word = shift;;
+    $word =~ s/^(nie|naj)+//;
+    $word;
+}
+while (my $input = <>) {
+    chomp($input);
+    $input = prefix($input);
+    for my $suffix (@suffix) {
+        if ($input =~ s/$suffix$//) {
+            last;
+        }
+    }
+    say $input;
+}
