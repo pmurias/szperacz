@@ -22,7 +22,7 @@ binmode *STDIN,  ':encoding(UTF-8)';
 debug "loading tokIDs...";
 my $h = retrieve('index/tokIDs');
 debug "loading morfologik...";
-Morfologik::load('m1');
+Morfologik::load();#'m1');
 debug "enter query";
 
 sub search {
@@ -49,14 +49,18 @@ sub possible {
     map {to_id($_)} @{Morfologik::get(lc $tok)};
 }
 
-sub or_query {
-    my ($q) = @_;
-    my @or = map {possible($_)} split( '\|', $q );
+sub any_of {
+    my @or = map {possible($_)} @_;
     my $result = search( shift @or );
     for my $w (@or) {
         $result = $result->or( search($w) );
     }
     $result;
+}
+
+sub or_query {
+    my ($q) = @_;
+    any_of( split( '\|', $q ));
 }
 
 open (my $titles,'index/titles');
@@ -84,9 +88,9 @@ while ( my $q = <> ) {
     my $q = lc $q;
     if ( $q =~ /"(.*)"/ ) {
         my @parts = split(' ',$1);
-        my $result = search( shift @parts );
+        my $result = any_of( shift @parts );
         for my $w (@parts) {
-            $result = $postings->phrase($result, search($w) );
+            $result = $postings->phrase($result, any_of($w) );
         }
         report($q,$result);
     }

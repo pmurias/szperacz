@@ -147,13 +147,11 @@ Result * compressed_postings_search(Postings * p, int tokID) {
 
 Result* postings_search(Postings* p,int tokID) {
     if (p->compressed) return compressed_postings_search(p,tokID);
-    printf("tokID:%d terms:%d\n",tokID,p->terms);
     if (tokID >= p->terms) { 
         printf("asking for a tokID %d > %d\n",tokID,p->terms);
         abort();
     }
     int offset = p->offsets[tokID];
-    printf("offset:%d\n",offset);
     int size;
     if (tokID == p->terms-1) {
       fseek(p->file,0,SEEK_END);   
