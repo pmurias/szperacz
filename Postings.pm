@@ -20,15 +20,27 @@ typedef struct Postings {
 } Postings;
 
 
-Postings* postings_create(char * filename, int compressed) {
+Postings* create_compressed(char * filename) {
     Postings* p = malloc(sizeof(Postings));
     p->filename = filename;
     p->file = fopen(filename,"r");
-    fread(&p->terms,sizeof(int),1,p->file);
-    p->offsets = (int) malloc(sizeof(int) * p->terms);
+    fread(&p->terms, sizeof(int), 1, p->file);
+    p->offsets = calloc(p->terms, sizeof(int));
     p->debug = 1;
-    p->compressed = compressed;
-    fread((void*)p->offsets,sizeof(int),p->terms,p->file);
+    p->compressed = 1;
+    fread(p->offsets, sizeof(int), p->terms, p->file);
+    return p;
+}
+
+Postings* create_uncompressed(char * filename) {
+    Postings* p = (Postings *)malloc(sizeof(Postings));
+    p->filename = filename;
+    p->file = fopen(filename,"r");
+    fread(&p->terms,sizeof(int),1,p->file);
+    p->offsets = (int *)malloc(sizeof(int) * p->terms);
+    p->debug = 1;
+    p->compressed = 0;
+    fread(p->offsets,sizeof(int),p->terms,p->file);
     return p;
 }
 
@@ -106,8 +118,10 @@ Result * compressed_postings_search(Postings * p, int tokID) {
     int end_offset;
     int size;
     if (tokID == p->terms-1) {
+      int pos = ftell(p->file);
       fseek(p->file,0,SEEK_END);   
       end_offset = ftell(p->file);
+      fseek(p->file, pos, SEEK_SET);
     } else {
       end_offset = p->offsets[tokID+1];
     }
