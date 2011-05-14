@@ -30,8 +30,10 @@ sub search {
 #    my $tokID = $h->{$word};
 #    say "tokID $word = $tokID";
     if ($tokID != -1) {
-        #say "searching for tokID: $tokID";
-        $postings->search($tokID);
+        debug "searching for tokID: $tokID";
+        my $ret = $postings->search($tokID);
+        debug "searched";
+        $ret;
     } else {
         $postings->empty();
     }
@@ -43,7 +45,7 @@ sub to_id {
 }
 sub possible {
     my $tok = shift;
-    #debug "all possibilites for $tok:",join(',',@{Morfologik::get(lc $tok)});
+    debug "all possibilites for $tok:",join(',',@{Morfologik::get(lc $tok)});
     map {to_id($_)} @{Morfologik::get(lc $tok)};
 }
 
@@ -72,7 +74,7 @@ sub report {
     my ($query,$result) = @_;
     my @documents = $result->flatten;
     say "QUERY: $query TOTAL: ", $#documents + 1;
-    for my $docID (@documents[0..4]) {
+    for my $docID (@documents) {
         say title($docID);
     }
 }

@@ -23,7 +23,7 @@ int chunk_size(file f,int tokID)
 
 int main()
 {
-    int parts = 25;
+    int parts = 27;
     int i;
 
     file out;
