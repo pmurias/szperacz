@@ -6,10 +6,11 @@ use Postings;
 use Term::ANSIColor qw(:constants);
 use List::MoreUtils qw(any uniq);
 use Encode;
+use Morfologik;
 use warnings;
 use strict;
 say "creating postings...";
-my $postings = PostingsPtr::create("index/postings");
+my $postings = PostingsPtr::create("index/postings_full");
 say "got here";
 
 binmode *STDOUT, ':encoding(UTF-8)';
@@ -17,24 +18,53 @@ binmode *STDIN,  ':encoding(UTF-8)';
 
 say "loading tokIDs...";
 my $h = retrieve('index/tokIDs');
-say "loaded IDs...";
+say "loading morfologik...";
+Morfologik::load('m1');
+say "enter query";
 
 sub search {
-    my $word  = shift;
-    my $tokID = $h->{$word};
-    say "tokID $word = $tokID";
-    $postings->search($tokID);
+    my $tokID  = shift;
+#    my $tokID = $h->{$word};
+#    say "tokID $word = $tokID";
+    if ($tokID != -1) {
+        say "searching for tokID: $tokID";
+        $postings->search($tokID);
+    } else {
+        $postings->empty();
+    }
+}
+
+sub to_id {
+    my $tok = shift;
+    $h->{$tok} // -1;
+}
+sub possible {
+    my $tok = shift;
+    say "all possibilites for $tok:",join(',',@{Morfologik::get(lc $tok)});
+    map {to_id($_)} @{Morfologik::get(lc $tok)};
 }
 
 sub or_query {
     my ($q) = @_;
-    my @or = split( '\|', $q );
+    my @or = map {possible($_)} split( '\|', $q );
     my $result = search( shift @or );
     for my $w (@or) {
         $result = $result->or( search($w) );
     }
     $result;
 }
+
+open (my $titles,'index/titles');
+binmode $titles,  ':encoding(UTF-8)';
+
+my @titles = <$titles>;
+sub title {
+    my $docID = shift;
+    my $title = $titles[$docID];
+    chomp($title);
+    $title;
+}
+
 
 while ( my $q = <> ) {
     chomp($q);
@@ -49,8 +79,6 @@ while ( my $q = <> ) {
         say "documents: ", $#documents + 1;
         for my $docID (@documents) {
             say $docID;
-            #    my $f = "/home/pawel/wyszukiwarka/raw/".($docID+1);
-            #print decode_utf8(`head -n 1 $f`);
         }
     }
     else {
@@ -61,11 +89,10 @@ while ( my $q = <> ) {
         }
         my @documents = $result->flatten;
         say "documents:", $#documents + 1;
-        for my $docID (@documents) {
+        for my $docID (@documents[0..4]) {
             #last unless defined $docID;
             say $docID;
-            #my $f = "/home/pawel/wyszukiwarka/raw/".($docID+1);
-            #print decode_utf8(`head -n 1 $f`);
+            say title($docID);
         }
     }
 

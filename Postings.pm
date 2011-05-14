@@ -44,6 +44,15 @@ Postings* create_uncompressed(char * filename) {
     return p;
 }
 
+Result* postings_empty(Postings* p) {
+    Result* r = (Result*) malloc(sizeof(Result));
+    int size = 0;
+    int *buf = malloc(size * sizeof(int)); 
+    r->buf = buf;
+    r->size = size;
+    return r;
+}
+
 /* 
     assume that file is set in a proper position 
     IMPORTANT call with len set to 0

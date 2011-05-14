@@ -8,7 +8,7 @@ use Encode;
 use warnings;
 use strict;
 say "creating postings...";
-my $postings = PostingsPtr::create("index/postings");
+my $postings = PostingsPtr::create("index/postings_full");
 
 binmode *STDOUT, ':encoding(UTF-8)';
 binmode *STDIN, ':encoding(UTF-8)';
