@@ -1,0 +1,58 @@
+use utf8;
+sub suffix {
+    local $_ = shift;{
+    s[a$][] and last;
+    s[ą$][] and last;
+    s[m$][] and last;
+    s[ch$][] and last;
+    s[mi$][] and last;
+    s[e$][] and last;
+    s[ego$][] and last;
+    s[emu$][] and last;
+    s[ej$][] and last;
+    s[om$][] and last;
+    s[i$][] and last;
+    s[u$][] and last;
+    s[ami$][] and last;
+    s[ach$][] and last;
+    s[ę$][] and last;
+    s[ów$][] and last;
+    s[ń$][] and last;
+    s[owi$][] and last;
+    s[o$][] and last;
+    s[y$][] and last;
+    s[em$][] and last;
+    s[ie$][] and last;
+    s[cy$][] and last;
+    s[li$][] and last;
+    s[libyśmy$][] and last;
+    s[libyście$][] and last;
+    s[liśmy$][] and last;
+    s[liby$][] and last;
+    s[liście$][] and last;
+    s[łem$][] and last;
+    s[łeś$][] and last;
+    s[łbyś$][] and last;
+    s[łbym$][] and last;
+    s[łby$][] and last;
+    s[ł$][] and last;
+    s[łoby$][] and last;
+    s[łabyś$][] and last;
+    s[łabym$][] and last;
+    s[łybyście$][] and last;
+    s[łyście$][] and last;
+    s[łaś$][] and last;
+    s[łyby$][] and last;
+    s[łaby$][] and last;
+    s[łyśmy$][] and last;
+    s[łybyśmy$][] and last;
+    s[łam$][] and last;
+    s[ło$][] and last;
+    s[ła$][] and last;
+    s[ły$][] and last;
+    s[cie$][] and last;
+    s[niu$][] and last;
+    }$_;
+}
+1;
+
