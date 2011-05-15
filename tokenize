@@ -10,6 +10,8 @@ use Term::ProgressBar;
 use Tokenizer;
 use Morfologik;
 use Storable;
+use Index::Compress;
+use Index::Merge;
 
 mkdir('index');
 #system('ln -s /home/pawel/wyszukiwarka/raw index/raw');
@@ -90,7 +92,10 @@ sub read_file {
     store \%h,'index/tokIDs';
 
 
-    say "writing titles...";
+    say "merging ".$part."...";
+    Index::Merge::merge_index($part);
+    say "compressing...";
+    Index::Compress::compress_file("index/postings_full", "index/postings.compressed");
     
 
 }
