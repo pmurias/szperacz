@@ -136,8 +136,8 @@ Result * compressed_postings_search(Postings * p, int tokID) {
       end_offset = p->offsets[tokID+1];
     }
     int compressed_chunk_size = (end_offset - offset) / sizeof(unsigned char);
-    size = get_chunk_size(p->file, compressed_chunk_size);
     fseek(p->file,offset,SEEK_SET);
+    size = get_chunk_size(p->file, compressed_chunk_size);
     int * buf = parse_chunk(p->file, size, compressed_chunk_size);
     Result* r = (Result*) malloc(sizeof(Result));
     r->buf = buf;
