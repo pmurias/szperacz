@@ -25,6 +25,12 @@ while (my $word = <$morfologik>) {
         $cut{substr($a,$common)}++;
     }
 }
-for (sort {length($b) <=> length($a)} keys %cut) {
+#for (sort {length($b) <=> length($a)} keys %cut) {
+
+delete $cut{''};
+my @sorted = sort {$cut{$b} <=> $cut{$a}} keys %cut;
+for (@sorted[0..50]) {
+    #say $cut{$_}," ",$_;
     say $_;
 }
+#}
