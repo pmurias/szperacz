@@ -118,12 +118,12 @@ Ponadto odnotowano następujące czasy, poszczególnych części procesu rozruch
 
 \begin{tabular}{|l|l|}
 \hline
-Etap & Czas trwania\\
+Metoda tworzenia indeksu & Czas trwania\\
 \hline
-Tokenizacja i tworzenie plików częściowych indeksu (stemming) & 0\\
-Tokenizacja i tworzenie plików częściowych indeksu (brak stemmingu) & 0\\
-Scalanie plików częściowych indeksu & 0\\
-Kompresja indeksu & 0\\
+Tokenizacja,tworzenie plików częściowych, scalanie (brak kompresji, brak stemmingu) & 0\\
+Tokenizacja,tworzenie plików częściowych, scalanie (brak kompresja, stemming) & 0\\
+Tokenizacja,tworzenie plików częściowych, scalanie (kompresja, brak stemmingu) & 18m 52s\\
+Tokenizacja,tworzenie plików częściowych, scalanie (kompresja, stemming) & 0\\
 \hline
 
 \end{tabular}
