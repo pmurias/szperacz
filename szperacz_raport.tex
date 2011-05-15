@@ -1,0 +1,119 @@
+\documentclass[11pt,leqno]{article}
+\usepackage[MeX]{polski}
+\usepackage[utf8]{inputenc}
+
+\usepackage{a4wide}
+
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{bm}
+\usepackage{array}
+
+%%%%%%%%%%%%%%%%%%
+
+\title{{\textbf{Pracownia z wyszukiwania informacji}}\\[1ex]
+       {\large Prowadzący: dr hab. Tomasz Jurdziński}}
+\author{Paweł Murias, Michał Rychlik}
+\date{Wrocław, dnia \today\ r.}
+
+\newtheorem{theorem}{Twierdzenie}
+
+\begin{document}
+\thispagestyle{empty}
+\maketitle
+
+\section{Instalacja}
+
+Paweł
+
+\section{Instrukcja użytkownika}
+
+Aplikacja działa w dwóch trybach:
+
+\begin{itemize}
+\item wsadowym
+\item interaktywnym
+\end{itemize}
+
+W trybie wsadowym aplikacja oczekuje na dwa argumenty wywołania programu. Pierwszym ma być plik z zapytania w formacie wynikającym z treści zadania, a drugim nazwa pliku w którym mają znaleźć się wyniki.\\\\
+W trybie interaktywnym, który uruchamiany jest jeśli użytkownik nie poda argumentów, które powodują uruchomienie trybu wsadowego aplikacja wyświetla symbol zachęty (prompt), po którego pojawieniu się użytkownik może wpisywać zapytania w formacie określonym w treści zadania.
+
+\section{Opis użytych algorytmów}
+
+Indeks to zbiór pozycyjnych list postingowych utrzymywany w binarnym pliku na dysku twardym. W pliku tym dane przechowywane są w następujący sposób:
+
+\begin{itemize}
+\item Pierwszą wartością jest liczba termów w słowniku.
+\item Potem następuje blok liczb o długości, odpowiadającej liczbie termów, które oznaczają miejsce w pliku (offset), w którym pownniśmy szukać listy postingowej dla danego termu. Tak więc w i-tej linni tej sekcji znajduje się "adres" w dalszej części pliku, pod którym można znaleźć listę postingową i-tego termu. Dzięki temu dostęp do interesującego fragmentu pliku osiągany jest w czasie stałym.
+\item W pozostałej części pliku zaczynając się pod wspomnianymi wyżej offsetami znajdują się listy postingowe poszczególnych termów. Offset oznacza początek listy danego termu, jej koniec jest określany albo przez offset dla kolejnego termu albo przez koniec pliku w przypadku ostatniego termu. Lista postingowa termu składa się z jednej lub większej ilości sekcji postaci: (docID, posSize, positions), gdzie: docID to id dokumentu w którym występuje dany term, posSize to ilość miejsc, w których dany term występuje w dokumencie o id równym docID, a postings to lista pozycji wystąpień termu w dokumencie o długości posSize. 
+\end{itemize} 
+
+Z powodu wielkości danych do zaindeksowania oraz ograniczonej ilości pamięci RAM, na maszynie testowej, indeks jest tworzony w częściach. Każda z części jest wynikiem działania tokenizatora, który przegląda dokumenty do zaindeksowania i tworzy listę trójek (tokenID, docID, position), które następnie są sortowane leksykograficznie, co pozwala w łatwy sposób stworzyć pliki o podanym powyżej formacie. Następnie zewnętrzny skrypt dokonuje scalenia części indeksu w jeden plik wynikowy (dla danych z wikipedii w procesie tym są tworzone 24 pliki częściowe, a ostateczny, scalony plik indeksu ma ok. 1GB).\\\\
+Istnieje również możliwość wyszukiwania w indeksie w formie skompresowanej. Kompresja dotyczy tylko list postingowych. Ponieważ zależy nam na ważnej własności dostępuj w czasie stałym do odpowiedniej sekcji pliku na podstawie offsetu, o którym wiemy, że znajduje się na i-tej pozycji w pierwszej części pliku. Nie da się tego osiągnąć za pomocą kompresji, którą stosujemy w naszym rozwiązaniu.\\\\
+Algorytm kompresji postępuje jak następuje:
+\begin{itemize}
+\item Chcąc skompresować liczbę $n$ zapisujemy ją w systemie o podstawie $128$.
+\item Każda z liczb występujących w tym zapisie może być zapisana na 7 bitach.
+\item Liczby, które nie są ostatnimi w reprezentacji, jeden nadmiarowy bit (z 8 dostępnych) przy implementacji wykorzystującej typ unsigned char, mają ustawiony na 0. Ostatnia liczba ma go ustawionego na 1, co ma sygnalizować koniec zapisu liczby $n$.
+\item Ciąg liczby (typu integer) zapisujemy jako jeden długi napis będący sklejeniem reprezentacji opisanych powyżej.
+\item Dodatkowo, ponieważ pozycje w dokumencie mogą mieć stosunkowo wysokie numery. Pamiętamy jedynie pierwszy numer pozycji w pełnej formie, a pozostałe zastępujemy różnicami między daną pozycją a poprzednią, licząc przy tym, że uzyskane liczby będą o wiele krótsze od orginalnych.
+\end{itemize} 
+
+Lematyzacja jest osiągana przez pobieranie form bazowych z morfologika. Stemming został zaimplementowany przy pomocy następującego algorytmu:
+
+\begin{itemize}
+\item Paweł
+\end{itemize}
+
+\section{Implementacja}
+
+Aplikacja została napisana w dwóch językach programowania: Perlu oraz C.\\
+Perl został wykorzystany głównie w procesie tokenizacji, obsługi wejścia, wyjścia (interfejsu użytkownika) oraz do testów. W C zostały napisane części programu, na których wydajności najbardziej zależało autorom (tzn. tworzenie indeksu, scalalnie plików pośrednich, wyszukiwanie).\\\\
+
+W implementacji wykorzystano następujące biblioteki:
+\begin{itemize}
+\item Paweł
+\end{itemize}
+
+\section{Wyniki testów}
+
+Proste testy poprawnościowe (na małych danych), znajdują się w katalogu t i zostały napisane w perlu. Sprawdzają one wyniki zapytań o termy, które znajdują się w słowniku, nie ma ich tam, a także zapytania boolowskie oraz frazowe. Czas wykonania (podania odpowiedzi) dla tych testów był pomijalnie mały, a ich celem było jedynie sprawdzenie poprawnośći zastosowanych algorytmów, możliwe do zweryfikowania na podstawie danych wejściowych.\\\\
+
+Następnie wykonano szereg testów na zapytaniach podanych w treści zadania. Poniżej znajduje się zestawienie czasów, po których były dostępne wyniki.\\
+
+\begin{tabular}{|l|l|}
+\hline
+Test(Metoda) & Czas oczekiwania na wynik\\
+\hline
+Pytania koniunkcyjne (brak kompresji, brak stemmingu) & 0\\
+Pytania koniunkcyjne (brak kompresji, stemming) & 0\\
+Pytania koniunkcyjne (kompresja, brak stemming) & 0\\
+Pytania koniunkcyjne (kompresja, stemming) & 0\\
+Pytania AND,OR (brak kompresji, brak stemmingu) & 0\\
+Pytania AND,OR (brak kompresji, stemming) & 0\\
+Pytania AND,OR (kompresja, brak stemmingu) & 0\\
+Pytania AND,OR (kompresja, stemming) & 0\\
+Zapytania frazowe (brak kompresji, brak stemmingu) & 0\\
+Zapytania frazowe (brak kompresji, stemming) & 0\\
+Zapytania frazowe (kompresja, brak stemmingu) & 0\\
+Zapytania frazowe (kompresja, stemming) & 0\\
+\hline
+\end{tabular}
+
+Ponadto odnotowano następujące czasy, poszczególnych części procesu rozruchu.
+
+\begin{tabular}{|l|l|}
+\hline
+Etap & Czas trwania\\
+\hline
+Tokenizacja i tworzenie plików częściowych indeksu (stemming) & 0\\
+Tokenizacja i tworzenie plików częściowych indeksu (brak stemmingu) & 0\\
+Scalanie plików częściowych indeksu & 0\\
+Kompresja indeksu & 0\\
+\hline
+
+\end{tabular}
+\end{document}

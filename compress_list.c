@@ -211,5 +211,5 @@ void compress_file(char * in_file_name, char * out_file_name) {
 }
 
 int main() {
-    compress_file("index/postings1", "index/postings1_compress");
+    compress_file("index/postings_at_once", "index/compressed_postings");
 }
