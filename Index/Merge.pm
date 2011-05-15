@@ -19,13 +19,13 @@ int chunk_size(file f,int tokID)
     }
 }
 
-void merge_index(int parts)
+void merge_index(char* input_files,char* output_file,int parts)
 {
     int i;
 
     file out;
 
-    out.f = fopen("index/postings_full", "w");
+    out.f = fopen(output_file, "w");
     out.terms = 0;
 
 
@@ -35,7 +35,7 @@ void merge_index(int parts)
 
     char filename[100];
     for (i = 0; i < parts; i++) {
-	sprintf(filename, "index/postings%d", i);
+	sprintf(filename, input_files, i);
         printf("%s\n",filename);
 	input[i].f = fopen(filename, "r");
 	fread(&input[i].terms, sizeof(int), 1, input[i].f);

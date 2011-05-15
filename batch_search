@@ -7,14 +7,26 @@ use Term::ANSIColor qw(:constants);
 use List::MoreUtils qw(any uniq);
 use Encode;
 use Morfologik;
+use Getopt::Long;
+use Stemmer;
+my $stemmer = 0;
+my $compressed = 0;
+GetOptions(stemmer => \$stemmer,compressed=> \$compressed);
 use warnings;
 use strict;
 sub debug {
     #say "# ",@_;
 }
 debug "creating postings...";
-my $postings = PostingsPtr::create("index/postings_full");
-debug "got here";
+my $filename = "index/postings_full";
+if ($compressed) {
+    $filename = "index/postings";
+}
+$filename .= '.stemming' if ($stemmer);
+$filename .= '.compressed' if ($compressed);
+say $filename;
+my $postings = PostingsPtr::create($filename);
+say "got here";
 
 binmode *STDOUT, ':encoding(UTF-8)';
 binmode *STDIN,  ':encoding(UTF-8)';
@@ -22,7 +34,8 @@ binmode *STDIN,  ':encoding(UTF-8)';
 debug "loading tokIDs...";
 my $h = retrieve('index/tokIDs');
 debug "loading morfologik...";
-Morfologik::load();#'m1');
+Morfologik::load() unless $stemmer;
+Stemmer::load_stemming() if $stemmer;
 debug "enter query";
 
 sub search {
@@ -43,10 +56,14 @@ sub to_id {
     my $tok = shift;
     $h->{$tok} // -1;
 }
+
 sub possible {
     my $tok = shift;
-    debug "all possibilites for $tok:",join(',',@{Morfologik::get(lc $tok)});
-    map {to_id($_)} @{Morfologik::get(lc $tok)};
+    if ($stemmer) {
+        to_id(Stemmer::stem($tok));
+    } else {
+        map {to_id($_)} @{Morfologik::get(lc $tok)};
+    }
 }
 
 sub any_of {

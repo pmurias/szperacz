@@ -27,7 +27,16 @@
 
 \section{Instalacja}
 
-Paweł
+curl -L http://xrl.us/perlbrewinstall | bash
+echo 'source ~/perl5/perlbrew/etc/bashrc' >> ~/.bashrc
+# otworzyć nową powłokę
+perlbrew install perl-5.12.3
+curl -L http://cpanmin.us | perl - App::cpanminus
+cpanm Term::ProgressBar::Quiet
+cpanm Inline::C
+cpanm Dir::Self
+cpanm utf8::all
+cpanm List::MoreUtil
 
 \section{Instrukcja użytkownika}
 

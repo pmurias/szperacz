@@ -12,18 +12,32 @@ use Morfologik;
 use Storable;
 use Index::Compress;
 use Index::Merge;
+use Stemmer;
 
 mkdir('index');
 #system('ln -s /home/pawel/wyszukiwarka/raw index/raw');
 #say "wc -l $ARGV[0]";
 my $max = 15255080;#`wc -l $ARGV[0]`;
 
-say "Loading morfologik...";
-Morfologik::load();
-say "Loaded morfologik.";
+my $stemming = $ARGV[1] // '';
+
+unless ($stemming) {
+    say "Loading morfologik...";
+    Morfologik::load();
+    say "Loaded morfologik.";
+}
+my $stemming_part = '';
+if ($stemming) {
+    $stemming_part = '.stemming';
+    say "Loading stemming...";
+    Stemmer::load_stemming();
+    say "Loaded stemming.";
+}
 
 my $progress = Term::ProgressBar->new({name => 'Powers', count => $max, remove => 1, ETA=> "linear"});
 open(my $file,$ARGV[0]);
+
+
 open(my $titles,">index/titles");
 binmode $titles, ':encoding(UTF-8)';
 binmode $file, ':encoding(UTF-8)';
@@ -46,7 +60,11 @@ sub to_id {
 
 sub possible {
     my $tok = shift;
-    map {to_id($_)} @{Morfologik::get(lc $tok)};
+    if ($stemming) {
+        to_id(Stemmer::stem($tok));
+    } else {
+        map {to_id($_)} @{Morfologik::get(lc $tok)};
+    }
 }
 sub read_file {
     my @titles;
@@ -84,7 +102,7 @@ sub read_file {
     say "storing tokens...";
 
     $tokenizer->sort;
-    $tokenizer->write("index/postings$part");
+    $tokenizer->write("index/postings$stemming_part$part");
     $part++;
 
     say "writing tokIDs...";
@@ -93,9 +111,9 @@ sub read_file {
 
 
     say "merging ".$part."...";
-    Index::Merge::merge_index($part);
+    Index::Merge::merge_index("index/postings$stemming_part%d","index/postings_full$stemming_part",$part);
     say "compressing...";
-    Index::Compress::compress_file("index/postings_full", "index/postings.compressed");
+    Index::Compress::compress_file("index/postings_full$stemming_part", "index/postings$stemming_part.compressed");
     
 
 }
