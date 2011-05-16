@@ -31,16 +31,16 @@ Na płycie załączone są programy wyszukujące w formacie binarnym: tokenize.b
 Należy je uruchomić w katalogu zawierającym morfologik.
 Aby utworzyć indeksy należy odpalić $tokenize.bin \quad sciezka do wikipedii$ oraz $tokenize.bin \quad sciezka do wikipedii \quad 1$, aby utworzyć indeks używający stemmingu.\\\\Aby uruchomić wyszukiwarkę ze źródeł wymagana jest aktualna instalacja perl oraz instalacja wykorzystanych modułów.\\\\
 $
-curl -L http://xrl.us/perlbrewinstall | bash \newline
-echo 'source ~/perl5/perlbrew/etc/bashrc' >> ~/.bashrc \newline
+curl \quad -L \quad http://xrl.us/perlbrewinstall \quad | \quad bash \newline
+echo \quad 'source \quad ~/perl5/perlbrew/etc/bashrc' \quad >> \quad ~/.bashrc \newline
 // otworzyc \quad nowa \quad powloke \newline
-perlbrew install perl-5.12.3 \newline
-curl -L http://cpanmin.us | perl - App::cpanminus \newline
-cpanm Term::ProgressBar::Quiet \newline
-cpanm Inline::C \newline
-cpanm Dir::Self \newline
-cpanm utf8::all \newline
-cpanm List::MoreUtil \newline
+perlbrew \quad install \quad perl-5.12.3 \newline
+curl \quad -L \quad http://cpanmin.us \quad | \quad perl \quad - \quad App::cpanminus \newline
+cpanm \quad Term::ProgressBar::Quiet \newline
+cpanm \quad Inline::C \newline
+cpanm \quad Dir::Self \newline
+cpanm \quad utf8::all \newline
+cpanm \quad List::MoreUtil \newline
 $
 \section{Instrukcja użytkownika}
 
