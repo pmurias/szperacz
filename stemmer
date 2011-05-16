@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use v5.10;
 use utf8::all;
+do 'stem.pl';
 sub prefix {
     my $word = shift;;
     $word =~ s/^(nie|naj)+//;

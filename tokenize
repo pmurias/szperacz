@@ -81,7 +81,7 @@ sub read_file {
             say $titles $1;
             if ($tokenizer->bufTop > maxTokens) {
                 $tokenizer->sort;
-                $tokenizer->write("index/postings$part");
+                $tokenizer->write("index/postings$stemming_part$part");
                 $tokenizer = TokenizerPtr::create(2*maxTokens);
                 $part++;
             }
@@ -107,7 +107,7 @@ sub read_file {
 
     say "writing tokIDs...";
 
-    store \%h,'index/tokIDs';
+    store \%h,"index/tokIDs$stemming_part";
 
 
     say "merging ".$part."...";

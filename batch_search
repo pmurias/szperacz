@@ -22,17 +22,19 @@ my $filename = "index/postings_full";
 if ($compressed) {
     $filename = "index/postings";
 }
+
+my $stemmer_part = '.stemming';
+$stemmer_part = '' unless $stemmer;
 $filename .= '.stemming' if ($stemmer);
 $filename .= '.compressed' if ($compressed);
 say $filename;
 my $postings = PostingsPtr::create($filename);
-say "got here";
 
 binmode *STDOUT, ':encoding(UTF-8)';
 binmode *STDIN,  ':encoding(UTF-8)';
 
 debug "loading tokIDs...";
-my $h = retrieve('index/tokIDs');
+my $h = retrieve("index/tokIDs$stemmer_part");
 debug "loading morfologik...";
 Morfologik::load() unless $stemmer;
 Stemmer::load_stemming() if $stemmer;
@@ -92,24 +94,24 @@ sub title {
 }
 
 sub report {
-    my ($query,$result) = @_;
+    my ($query,$out,$result) = @_;
     my @documents = $result->flatten;
-    say "QUERY: $query TOTAL: ", $#documents + 1;
+    say $out "QUERY: $query TOTAL: ", $#documents + 1;
     for my $docID (@documents) {
-        say title($docID);
+        say $out title($docID);
     }
 }
-
-while ( my $q = <> ) {
+sub process_query {
+    my ($q,$out) = @_;
     chomp($q);
-    my $q = lc $q;
+    $q = lc $q;
     if ( $q =~ /"(.*)"/ ) {
         my @parts = split(' ',$1);
         my $result = any_of( shift @parts );
         for my $w (@parts) {
             $result = $postings->phrase($result, any_of($w) );
         }
-        report($q,$result);
+        report($q,$out,$result);
     }
     else {
         my @ands = split( ' ', $q );
@@ -117,7 +119,29 @@ while ( my $q = <> ) {
         for my $and (@ands) {
             $result = $result->and( or_query($and) );
         }
-        report($q,$result);
+        report($q,$out,$result);
     }
-
 }
+
+if ($ARGV[0] && $ARGV[1]) {
+    open (my $in,$ARGV[0]);
+    binmode $in,':encoding(UTF-8)';
+
+    open (my $out,'>',$ARGV[1]);
+    binmode $out,':encoding(UTF-8)';
+
+    while (my $q = <$in>) {
+        process_query($q,$out);
+    }
+} else {
+    use Term::ReadLine;
+    my $term = new Term::ReadLine 'xxx';
+    my $prompt = "? ";
+    binmode $term->OUT, ':encoding(UTF-8)';
+
+    while ( defined (my $q = decode('utf8',$term->readline($prompt))) ) {
+        $term->addhistory($q) if $q =~ /\S/;
+        process_query($q,$term->OUT);
+    }
+}
+

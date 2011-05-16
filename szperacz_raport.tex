@@ -1,12 +1,12 @@
 \documentclass[11pt,leqno]{article}
-\usepackage[MeX]{polski}
+%\usepackage[MeX]{polski}
 \usepackage[utf8]{inputenc}
 
 \usepackage{a4wide}
 
-\usepackage{amsfonts}
-\usepackage{amsmath}
-\usepackage{amsthm}
+%\usepackage{amsfonts}
+%\usepackage{amsmath}
+%\usepackage{amsthm}
 \usepackage{graphicx}
 \usepackage{caption}
 \usepackage{bm}
@@ -108,18 +108,18 @@ Następnie wykonano szereg testów na zapytaniach podanych w treści zadania. Po
 \hline
 Test(Metoda) & Czas oczekiwania na wynik\\
 \hline
-Pytania koniunkcyjne (brak kompresji, brak stemmingu) & 0\\
-Pytania koniunkcyjne (brak kompresji, stemming) & 0\\
-Pytania koniunkcyjne (kompresja, brak stemming) & 0\\
-Pytania koniunkcyjne (kompresja, stemming) & 0\\
-Pytania AND,OR (brak kompresji, brak stemmingu) & 0\\
-Pytania AND,OR (brak kompresji, stemming) & 0\\
-Pytania AND,OR (kompresja, brak stemmingu) & 0\\
-Pytania AND,OR (kompresja, stemming) & 0\\
-Zapytania frazowe (brak kompresji, brak stemmingu) & 0\\
-Zapytania frazowe (brak kompresji, stemming) & 0\\
-Zapytania frazowe (kompresja, brak stemmingu) & 0\\
-Zapytania frazowe (kompresja, stemming) & 0\\
+Pytania koniunkcyjne (brak kompresji, brak stemmingu) & 2m 12s\\
+Pytania koniunkcyjne (brak kompresji, stemming) & 1m 24s\\
+Pytania koniunkcyjne (kompresja, brak stemming) & 10m 36s\\
+Pytania koniunkcyjne (kompresja, stemming) & 8m 23s\\
+Pytania AND,OR (brak kompresji, brak stemmingu) & 3m 17s\\
+Pytania AND,OR (brak kompresji, stemming) & 1m 48s\\
+Pytania AND,OR (kompresja, brak stemmingu) & 17m 15s\\
+Pytania AND,OR (kompresja, stemming) & 14m 14s\\
+Zapytania frazowe (brak kompresji, brak stemmingu) & 35s\\
+Zapytania frazowe (brak kompresji, stemming) & 46s\\
+Zapytania frazowe (kompresja, brak stemmingu) & 4m 25s\\
+Zapytania frazowe (kompresja, stemming) & 4m 13s\\
 \hline
 \end{tabular}
 
@@ -129,10 +129,8 @@ Ponadto odnotowano następujące czasy, poszczególnych części procesu rozruch
 \hline
 Metoda tworzenia indeksu & Czas trwania\\
 \hline
-Tokenizacja,tworzenie plików częściowych, scalanie (brak kompresji, brak stemmingu) & 0\\
-Tokenizacja,tworzenie plików częściowych, scalanie (brak kompresja, stemming) & 0\\
-Tokenizacja,tworzenie plików częściowych, scalanie (kompresja, brak stemmingu) & 18m 52s\\
-Tokenizacja,tworzenie plików częściowych, scalanie (kompresja, stemming) & 0\\
+Tokenizacja,tworzenie plików częściowych, scalanie (stemming) & 27m 36s\\
+Tokenizacja,tworzenie plików częściowych, scalanie (brak stemmingu) 21m 23s& \\
 \hline
 
 \end{tabular}
