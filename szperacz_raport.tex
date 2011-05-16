@@ -1,12 +1,12 @@
 \documentclass[11pt,leqno]{article}
-%\usepackage[MeX]{polski}
+\usepackage[MeX]{polski}
 \usepackage[utf8]{inputenc}
 
 \usepackage{a4wide}
 
-%\usepackage{amsfonts}
-%\usepackage{amsmath}
-%\usepackage{amsthm}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amsthm}
 \usepackage{graphicx}
 \usepackage{caption}
 \usepackage{bm}
@@ -26,18 +26,18 @@
 \maketitle
 
 \section{Instalacja}
-
-curl -L http://xrl.us/perlbrewinstall | bash
-echo 'source ~/perl5/perlbrew/etc/bashrc' >> ~/.bashrc
-# otworzyć nową powłokę
-perlbrew install perl-5.12.3
-curl -L http://cpanmin.us | perl - App::cpanminus
-cpanm Term::ProgressBar::Quiet
-cpanm Inline::C
-cpanm Dir::Self
-cpanm utf8::all
-cpanm List::MoreUtil
-
+$
+curl -L http://xrl.us/perlbrewinstall | bash \newline
+echo 'source ~/perl5/perlbrew/etc/bashrc' >> ~/.bashrc \newline
+// otworzyc \quad nowa \quad powloke \newline
+perlbrew install perl-5.12.3 \newline
+curl -L http://cpanmin.us | perl - App::cpanminus \newline
+cpanm Term::ProgressBar::Quiet \newline
+cpanm Inline::C \newline
+cpanm Dir::Self \newline
+cpanm utf8::all \newline
+cpanm List::MoreUtil \newline
+$
 \section{Instrukcja użytkownika}
 
 Aplikacja działa w dwóch trybach:
@@ -130,7 +130,7 @@ Ponadto odnotowano następujące czasy, poszczególnych części procesu rozruch
 Metoda tworzenia indeksu & Czas trwania\\
 \hline
 Tokenizacja,tworzenie plików częściowych, scalanie (stemming) & 27m 36s\\
-Tokenizacja,tworzenie plików częściowych, scalanie (brak stemmingu) 21m 23s& \\
+Tokenizacja,tworzenie plików częściowych, scalanie (brak stemmingu) & 21m 23s\\
 \hline
 
 \end{tabular}
