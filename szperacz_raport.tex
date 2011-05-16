@@ -26,6 +26,14 @@
 \maketitle
 
 \section{Instalacja}
+
+Na płycie załączone są programy wyszukujące w formacie binarnym: tokenize.bin i search.bin.
+Należy je uruchomić w katalogu zawierającym morfologik.
+Aby utworzyć indeksy należy odpalić "tokenize.bin sciezka_do_wikipedi" oraz "tokenize.bin sciezka_do_wikipedi 1", aby utworzyć indeks używający stemmingu.
+
+
+Aby uruchomić wyszukiwarkę ze źródeł wymagana jest aktualna instalacja perl oraz instalacja wykorzystanych modułów.
+
 $
 curl -L http://xrl.us/perlbrewinstall | bash \newline
 echo 'source ~/perl5/perlbrew/etc/bashrc' >> ~/.bashrc \newline
@@ -47,6 +55,7 @@ Aplikacja działa w dwóch trybach:
 \item interaktywnym
 \end{itemize}
 
+Podanie opcji --stemmer powoduje użycie indeksu ze stemmingiem a --compressed z kompresją. Można łaczyć obie opcje.
 W trybie wsadowym aplikacja oczekuje na dwa argumenty wywołania programu. Pierwszym ma być plik z zapytania w formacie wynikającym z treści zadania, a drugim nazwa pliku w którym mają znaleźć się wyniki.\\\\
 W trybie interaktywnym, który uruchamiany jest jeśli użytkownik nie poda argumentów, które powodują uruchomienie trybu wsadowego aplikacja wyświetla symbol zachęty (prompt), po którego pojawieniu się użytkownik może wpisywać zapytania w formacie określonym w treści zadania.
 
@@ -111,7 +120,7 @@ Test(Metoda) & Czas oczekiwania na wynik\\
 Pytania koniunkcyjne (brak kompresji, brak stemmingu) & 2m 12s\\
 Pytania koniunkcyjne (brak kompresji, stemming) & 1m 24s\\
 Pytania koniunkcyjne (kompresja, brak stemming) & 10m 36s\\
-Pytania koniunkcyjne (kompresja, stemming) & 8m 23s\\
+Pytania koniunkcyjne (kompresja, stemming) &  8m 23s\\
 Pytania AND,OR (brak kompresji, brak stemmingu) & 3m 17s\\
 Pytania AND,OR (brak kompresji, stemming) & 1m 48s\\
 Pytania AND,OR (kompresja, brak stemmingu) & 17m 15s\\
