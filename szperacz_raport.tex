@@ -78,8 +78,11 @@ Algorytm kompresji postępuje jak następuje:
 
 Lematyzacja jest osiągana przez pobieranie form bazowych z morfologika. Stemming został zaimplementowany przy pomocy następującego algorytmu:
 
+
 \begin{itemize}
-\item Paweł
+\item Na podstawie morfologika tworzymy listę 50 najpopularniejszych końcówek słow.
+\item Za końcówke słowa rozumiemy ten litery z końca słowa które się różnią od formy bazowej.
+\item Robiąc stemming odcinamy prefiks słowa "nie" lub "naj" oraz najpopularniejszą pasującą końcówkę z listy.
 \end{itemize}
 
 \section{Implementacja}
